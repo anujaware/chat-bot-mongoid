@@ -4,10 +4,10 @@ module ChatBot
     field :name, type: String
     validates :name, presence: true, uniqueness: {case_sensitive: false}
 
-    before_validation :strip_name
+    before_validation :squish_name, if: "name.present?"
 
-    def strip_name
-      self.name# = name.truncate
+    def squish_name
+      self.name.squish!
     end
 
   end
