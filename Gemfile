@@ -17,5 +17,6 @@ gemspec
 gem 'mongoid', '~>5.1.4'
 
 group :test do
-  gem "minitest-line"
+  gem 'minitest-line'
+  gem 'database_cleaner'
 end

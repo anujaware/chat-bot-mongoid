@@ -48,6 +48,7 @@ GEM
     bson (4.1.1)
     builder (3.2.2)
     concurrent-ruby (1.0.2)
+    database_cleaner (1.5.3)
     erubis (2.7.0)
     globalid (0.3.7)
       activesupport (>= 4.1.0)
@@ -138,6 +139,7 @@ PLATFORMS
 
 DEPENDENCIES
   chat_bot!
+  database_cleaner
   minitest-line
   mongoid (~> 5.1.4)
 

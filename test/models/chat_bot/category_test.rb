@@ -30,9 +30,5 @@ module ChatBot
       category.reload
       assert_equal category.name, 'Cat 1'
     end
-
-    def teardown
-      Category.destroy_all
-    end
   end
 end
