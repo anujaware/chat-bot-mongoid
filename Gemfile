@@ -13,5 +13,9 @@ gemspec
 # To use a debugger
 # gem 'byebug', group: [:development, :test]
 
-gem 'mongoid'
-gem 'haml-rails'
+
+gem 'mongoid', '~>5.1.4'
+
+group :test do
+  gem "minitest-line"
+end

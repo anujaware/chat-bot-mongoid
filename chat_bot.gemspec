@@ -19,4 +19,5 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", "~> 4.2.7.1"
   s.add_dependency "mongoid", "~> 5.1.4"
+  s.add_dependency "haml-rails", "0.9.0"
 end
