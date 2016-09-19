@@ -18,5 +18,10 @@ gem 'mongoid', '~>5.1.4'
 
 group :test do
   gem 'minitest-line'
+
+##TODO Required for mintest matchers to test associations
+#  gem 'mongoid-minitest'
+#  gem 'minitest-matchers'
+
   gem 'database_cleaner'
 end
