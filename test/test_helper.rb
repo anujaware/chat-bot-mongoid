@@ -4,7 +4,12 @@ ENV["RAILS_ENV"] = "test"
 require File.expand_path("../../test/dummy/config/environment.rb",  __FILE__)
 require "rails/test_help"
 #require 'database_cleaner'
-#require "minitest/rails"
+
+##TODO Required for mintest matchers to test associations
+## But not working
+#require 'minitest/autorun'
+#require 'mongoid'
+#require 'mongoid-minitest'
 
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
@@ -24,4 +29,7 @@ class ActiveSupport::TestCase
   DatabaseCleaner.strategy = :truncation
   setup { DatabaseCleaner.start }
   teardown  { DatabaseCleaner.clean }
+
+  ##TODO Required for mintest matchers to test associations
+  ##  include Mongoid::Matchers
 end

@@ -30,5 +30,15 @@ module ChatBot
       category.reload
       assert_equal category.name, 'Cat 1'
     end
+
+    def test_sub_categories
+      #assert_must Category, have_many(:sub_categories)
+=begin
+### TODO: ERROR - Testing association
+ChatBot::CategoryTest#test_sub_categories:
+NoMethodError: undefined method `matches?' for ChatBot::Category:Class
+    test/models/chat_bot/category_test.rb:35:in `test_sub_categories'
+=end
+    end
   end
 end
