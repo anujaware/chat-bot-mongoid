@@ -18,6 +18,10 @@ gem 'mongoid', '~>5.1.4'
 
 group :test do
   gem 'minitest-line'
+  gem 'mongoid-fixture_set'
+  gem 'faker'
+  gem 'shoulda', '~> 3.5'
+  gem 'shoulda-matchers', '~> 2.0'
 
 ##TODO Required for mintest matchers to test associations
 #  gem 'mongoid-minitest'
