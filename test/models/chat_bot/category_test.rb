@@ -2,8 +2,10 @@ require './test/test_helper'
 
 module ChatBot
   class CategoryTest < ActiveSupport::TestCase
+    should validate_presence_of :name
+
     def setup
-      @category = Category.new
+      @category = Category.new #categories(:one)
     end
 
     def test_save_fail_without_name

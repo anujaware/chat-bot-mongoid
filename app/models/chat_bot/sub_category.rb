@@ -2,11 +2,14 @@ module ChatBot
   class SubCategory
     include Mongoid::Document
     field :name, type: String
+    field :description, type: String
+    field :repeat_limit, type: Integer, default: 0
 
     belongs_to :category, class_name: 'ChatBot::Category'
 
     validates :name, presence: true, uniqueness: { case_sensitive: false, scope: [:category] }
-    validates :category, presence: true
+    validates :category, :description, presence: true
+    validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
 
     before_validation :squish_name, if: "name.present?"
 
