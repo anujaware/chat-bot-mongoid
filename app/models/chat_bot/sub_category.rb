@@ -4,8 +4,10 @@ module ChatBot
     field :name, type: String
     field :description, type: String
     field :repeat_limit, type: Integer, default: 0
+    field :interval, type: String
 
     belongs_to :category, class_name: 'ChatBot::Category'
+    has_many :dialogues, class_name: 'ChatBot::Dialogue', foreign_key: :code
 
     validates :name, presence: true, uniqueness: { case_sensitive: false, scope: [:category] }
     validates :category, :description, presence: true

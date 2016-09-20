@@ -13,7 +13,7 @@ module ChatBot
     field :user_input_type, type: Integer, default: 0
     field :message_type, type: String, default: 'TEXT'
 
-    has_many :options, class_name: 'ChatBot::Option'
+    has_many :options, class_name: 'ChatBot::Option', primary_key: :code
     belongs_to :sub_category, class_name: 'ChatBot::SubCategory'
 
     validates :message, presence: true
