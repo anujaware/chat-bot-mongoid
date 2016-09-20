@@ -24,8 +24,8 @@ group :test do
   gem 'shoulda-matchers', '~> 2.0'
 
 ##TODO Required for mintest matchers to test associations
-#  gem 'mongoid-minitest'
-#  gem 'minitest-matchers'
+  gem 'mongoid-minitest'
+  gem 'minitest-matchers'
 
   gem 'database_cleaner'
 end

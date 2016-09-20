@@ -78,7 +78,12 @@ GEM
     mime-types-data (3.2016.0521)
     mini_portile2 (2.1.0)
     minitest (5.9.0)
+    minitest-activemodel (1.1.0)
+      activemodel (>= 3.2)
+      minitest (~> 5.0)
     minitest-line (0.6.3)
+      minitest (~> 5.0)
+    minitest-matchers (1.4.1)
       minitest (~> 5.0)
     mongo (2.3.0)
       bson (~> 4.1)
@@ -90,6 +95,10 @@ GEM
     mongoid-fixture_set (1.5.0)
       activesupport (~> 4.0)
       mongoid (>= 4.0)
+    mongoid-minitest (1.1.0)
+      minitest (~> 5.0)
+      minitest-activemodel (~> 1.1)
+      mongoid (>= 3)
     nokogiri (1.6.8)
       mini_portile2 (~> 2.1.0)
       pkg-config (~> 1.1.7)
@@ -153,8 +162,10 @@ DEPENDENCIES
   database_cleaner
   faker
   minitest-line
+  minitest-matchers
   mongoid (~> 5.1.4)
   mongoid-fixture_set
+  mongoid-minitest
   shoulda (~> 3.5)
   shoulda-matchers (~> 2.0)
 

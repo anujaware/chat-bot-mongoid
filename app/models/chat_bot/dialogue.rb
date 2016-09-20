@@ -2,9 +2,9 @@ module ChatBot
   class Dialogue
     include Mongoid::Document
 
-    RESPONSE_TYPES = { 0 => 'Choice', 1 => 'Single line text',
-                       2 => 'Multi line text', 3 => 'Dropdown',
-                       4 => 'Date'}
+    RESPONSE_TYPES = { 0 => 'Choice', 1 => 'Botcontinue',
+                       2 => 'Single line text', 3 => 'Multi line text',
+                       4 => 'Dropdown', 5 => 'Date', 6 => 'Attach'}
 
     MESSAGE_TYPES = ['TEXT', 'VIDEO:YOUTUBE', 'VIDEO:VIMEO', 'LINK', 'IMAGE']
 
@@ -13,9 +13,13 @@ module ChatBot
     field :user_input_type, type: Integer, default: 0
     field :message_type, type: String, default: 'TEXT'
 
+    has_many :options, class_name: 'ChatBot::Option'
+    belongs_to :sub_category, class_name: 'ChatBot::SubCategory'
+
     validates :message, presence: true
     validates :user_input_type, inclusion: RESPONSE_TYPES.keys
     validates :message_type, inclusion: MESSAGE_TYPES
+    validates :sub_category, presence: true
 
     def self.generate_code(for_code = nil)
       if for_code.present?
