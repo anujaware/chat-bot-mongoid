@@ -1,4 +1,4 @@
-require 'test_helper'
+require './test/test_helper'
 
 module ChatBot
   class DialogueTest < ActiveSupport::TestCase
@@ -10,7 +10,7 @@ module ChatBot
       in_array(Dialogue::MESSAGE_TYPES)
 
     def setup
-      @dialogue = Dialogue.create code: 'T410'
+      @dialogue = Dialogue.create code: 'T410', message: Faker::Lorem.sentence
       assert @dialogue.save
     end
 
@@ -46,45 +46,45 @@ module ChatBot
     def test_generate_code_for_410
        assert_equal Dialogue.generate_code('T410'), 'T411'
       
-       assert Dialogue.create code: 'T411'
+       assert Dialogue.create code: 'T411', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410'), 'T410.1'
       
-       assert Dialogue.create code: 'T410.1'
+       assert Dialogue.create code: 'T410.1', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410'), 'T410.2'
       
-       assert Dialogue.create code: 'T410.2'
+       assert Dialogue.create code: 'T410.2', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410'), 'T410.3'
     end
     
     def test_generate_code_for_410_1
        assert_equal Dialogue.generate_code('T410.1'), 'T411'
       
-       assert Dialogue.create code: 'T411'
+       assert Dialogue.create code: 'T411', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410.1'), 'T410.2'
       
-       assert Dialogue.create code: 'T410.2'
+       assert Dialogue.create code: 'T410.2', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410.1'), 'T410.11'
       
-       assert Dialogue.create code: 'T410.11'
+       assert Dialogue.create code: 'T410.11', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410.1'), 'T410.12'
       
-       assert Dialogue.create code: 'T410.12'
+       assert Dialogue.create code: 'T410.12', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410.1'), 'T410.13'
     end
     
     def test_generate_code_for_410_12
        assert_equal Dialogue.generate_code('T410.12'), 'T411'
       
-       assert Dialogue.create code: 'T411'
+       assert Dialogue.create code: 'T411', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410.12'), 'T410.13'
       
-       assert Dialogue.create code: 'T410.13'
+       assert Dialogue.create code: 'T410.13', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410.12'), 'T410.121'
       
-       assert Dialogue.create code: 'T410.121'
+       assert Dialogue.create code: 'T410.121', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410.12'), 'T410.122'
       
-       assert Dialogue.create code: 'T410.122'
+       assert Dialogue.create code: 'T410.122', message: Faker::Lorem.sentence
        assert_equal Dialogue.generate_code('T410.12'), 'T410.123'
     end
   end
