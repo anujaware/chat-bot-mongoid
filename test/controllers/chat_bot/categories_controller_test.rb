@@ -23,5 +23,13 @@ module ChatBot
       get :index
       assert_response :success
     end
+
+    def test_create
+      total_categories = Category.count
+      post :create, category: { name: 'Introduction' }
+      assert_response :success
+
+      assert_equal Category.count, total_categories + 1
+    end
   end
 end
