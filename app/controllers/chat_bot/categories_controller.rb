@@ -5,6 +5,26 @@ module ChatBot
 
     def index
       @categories = Category.all
+      @sub_categories = SubCategory.group_by()
+    end
+
+    def create
+      @category = Category.new safe_params
+
+      respond_to do |format|
+        if @category.save
+          format.js {}
+        else
+          format.html { render action: 'new' }
+          format.json { render action: :create, json: @category.errors, status: :unprocessable_entity }
+          # added:
+          format.js {}
+        end
+      end
+    end
+
+    def safe_params
+      params.require(:category).permit(:name)
     end
 
   end

@@ -1,5 +1,18 @@
 = select_tag 'category', options_from_collection_for_select(@categories, "slug", "name"),
   class: 'category_selection selectpicker', 'data-live-search' => true
+%button.btn.btn-primary#add-category{type: :button,
+  'data-toggle' => "modal", 'data-target' => "#new-category"} Add Category
+
+.modal.fade#new-category{tabindex: -1, role: :dialogue, 'aria-labelledby' => "create-category"}
+  .modal-dialog{role: :document}
+    .modal-content
+      .modal-header
+        #flash
+        = bootstrap_form_for :category, remote: true do |f|
+          = f.text_field :name, input_group_class: 'input-group-lg'
+          #errors
+          = f.submit
+
 
 %ul.nav.nav-tabs{role: :tablist}
   %li{role: :presentation, class: :active,
@@ -13,3 +26,4 @@
     Hi
   .tab-pane#new{role: :tabpanel}
     Hello
+

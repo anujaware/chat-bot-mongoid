@@ -51,6 +51,7 @@ GEM
       autoprefixer-rails (>= 5.2.1)
       sass (>= 3.3.4)
     bootstrap-select-rails (1.6.3)
+    bootstrap_form (2.5.0)
     bson (4.1.1)
     builder (3.2.2)
     concurrent-ruby (1.0.2)
@@ -186,6 +187,7 @@ PLATFORMS
 DEPENDENCIES
   bootstrap-sass (~> 3.3.6)
   bootstrap-select-rails
+  bootstrap_form
   chat_bot!
   database_cleaner
   faker
