@@ -1,0 +1,15 @@
+= select_tag 'category', options_from_collection_for_select(@categories, "slug", "name"),
+  class: 'category_selection selectpicker', 'data-live-search' => true
+
+%ul.nav.nav-tabs{role: :tablist}
+  %li{role: :presentation, class: :active,
+  'aria-controls' => "update", role: "tab", 'data-toggle' => "tab"}
+    %a{href: '#update'} Update
+  %li{role: :presentation, 'aria-controls' => "new", role: "tab", 'data-toggle' => "tab"}
+    %a{href: '#new'} New
+
+.tab-content
+  .tab-pane.active#update{role: :tabpanel}
+    Hi
+  .tab-pane#new{role: :tabpanel}
+    Hello
