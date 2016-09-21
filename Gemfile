@@ -15,6 +15,12 @@ gemspec
 
 
 gem 'mongoid', '~>5.1.4'
+gem 'haml-rails'
+gem 'mongoid-slug'
+gem 'bootstrap-sass', '~> 3.3.6'
+gem 'sass-rails', '>= 3.2'
+gem 'jquery-rails'
+gem 'bootstrap-select-rails'
 
 group :test do
   gem 'minitest-line'
