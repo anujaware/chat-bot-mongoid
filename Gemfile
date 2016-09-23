@@ -22,6 +22,7 @@ gem 'sass-rails', '>= 3.2'
 gem 'jquery-rails'
 gem 'bootstrap-select-rails'
 gem 'bootstrap_form'
+gem "nested_form"
 
 group :test do
   gem 'minitest-line'

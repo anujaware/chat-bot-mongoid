@@ -15,15 +15,26 @@
 
 
 %ul.nav.nav-tabs{role: :tablist}
-  %li{role: :presentation, class: :active,
-  'aria-controls' => "update", role: "tab", 'data-toggle' => "tab"}
-    %a{href: '#update'} Update
-  %li{role: :presentation, 'aria-controls' => "new", role: "tab", 'data-toggle' => "tab"}
-    %a{href: '#new'} New
+  %li{role: :presentation}  
+    %a{href: '#update','aria-controls' => "update", role: "tab", 'data-toggle' => "tab"} Update
+  %li{role: :presentation, class: :active}
+    %a{href: '#new', 'aria-controls' => "new", role: "tab", 'data-toggle' => "tab"} New
 
 .tab-content
-  .tab-pane.active#update{role: :tabpanel}
+  .tab-pane#update{role: :tabpanel}
     Hi
-  .tab-pane#new{role: :tabpanel}
-    Hello
-
+  .tab-pane.active#new{role: :tabpanel}
+    .row
+      .col-md-6
+        = nested_form_for :sub_category do |f|
+          = f.text_field :name
+          = f.text_area :description
+          = f.number_field :repeat_limit
+          %span.help-block Select zero or keep empty for no repeat limit.
+          %br
+          = f.fields_for :dialogues do |dialogue_form|
+            = dialogue_f.select :message_type, ChatBot::Dialogue::MESSAGE_TYPES.to_a.collect{|typ| [typ.capitalize, typ]}
+            = dialogue_f.text_area :message
+            = dialogue_f.select :user_input_type, options_from_collection_for_select(ChatBot::Dialogue::RESPONSE_TYPES.to_a, 'first', 'last')
+            = f.link_to_add "Add an option", :dialogues
+          = f.submit

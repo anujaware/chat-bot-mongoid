@@ -14,5 +14,6 @@
 //= require jquery_ujs
 //= require bootstrap-sprockets
 //= require bootstrap-select
+//= require jquery_nested_form
 
 $('.selectpicker').selectpicker();

@@ -13,6 +13,8 @@ module ChatBot
     validates :category, :description, presence: true
     validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
 
+    accepts_nested_attributes_for :dialogues
+
     before_validation :squish_name, if: "name.present?"
 
     def squish_name

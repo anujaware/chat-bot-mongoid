@@ -11,6 +11,8 @@ module ChatBot
 
     validates :name, presence: true, uniqueness: {case_sensitive: false}
 
+    accepts_nested_attributes_for :sub_categories
+
     before_validation :squish_name, if: "name.present?"
 
     def squish_name

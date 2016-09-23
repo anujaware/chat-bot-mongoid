@@ -13,13 +13,15 @@ module ChatBot
     field :user_input_type, type: Integer, default: 0
     field :message_type, type: String, default: 'TEXT'
 
-    has_many :options, class_name: 'ChatBot::Option', primary_key: :code
+    has_many :options, class_name: 'ChatBot::Option', primary_key: :code, inverse_of: :dialogue
     belongs_to :sub_category, class_name: 'ChatBot::SubCategory'
 
     validates :message, presence: true
     validates :user_input_type, inclusion: RESPONSE_TYPES.keys
     validates :message_type, inclusion: MESSAGE_TYPES
     validates :sub_category, presence: true
+
+    accepts_nested_attributes_for :options
 
     def self.generate_code(for_code = nil)
       if for_code.present?

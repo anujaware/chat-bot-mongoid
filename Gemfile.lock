@@ -118,6 +118,7 @@ GEM
       mongoid (>= 3.0)
       mongoid-compatibility
       stringex (~> 2.0)
+    nested_form (0.3.2)
     nokogiri (1.6.8)
       mini_portile2 (~> 2.1.0)
       pkg-config (~> 1.1.7)
@@ -199,6 +200,7 @@ DEPENDENCIES
   mongoid-fixture_set
   mongoid-minitest
   mongoid-slug
+  nested_form
   sass-rails (>= 3.2)
   shoulda (~> 3.5)
   shoulda-matchers (~> 2.0)

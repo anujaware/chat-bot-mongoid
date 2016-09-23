@@ -5,7 +5,6 @@ module ChatBot
 
     def index
       @categories = Category.all
-      @sub_categories = SubCategory.group_by()
     end
 
     def create
