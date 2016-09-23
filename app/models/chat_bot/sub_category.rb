@@ -1,6 +1,8 @@
 module ChatBot
   class SubCategory
     include Mongoid::Document
+    include Mongoid::Slug
+
     field :name, type: String
     field :description, type: String
     field :repeat_limit, type: Integer, default: 0
@@ -8,6 +10,10 @@ module ChatBot
 
     belongs_to :category, class_name: 'ChatBot::Category'
     has_many :dialogues, class_name: 'ChatBot::Dialogue', foreign_key: :code
+
+    slug :name
+
+    index({_slug: 1})
 
     validates :name, presence: true, uniqueness: { case_sensitive: false, scope: [:category] }
     validates :category, :description, presence: true

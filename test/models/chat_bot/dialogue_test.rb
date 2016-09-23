@@ -7,7 +7,7 @@ module ChatBot
     should validate_inclusion_of(:user_input_type).
       in_array(Dialogue::RESPONSE_TYPES.keys)
     should validate_inclusion_of(:message_type).
-      in_array(Dialogue::MESSAGE_TYPES)
+      in_array(Dialogue::MESSAGE_TYPES.keys)
 
     # TODO: mongoid-minitest not working
     #should belong_to(:sub_category)
@@ -22,16 +22,17 @@ module ChatBot
     def test_constants
       response_types = Dialogue::RESPONSE_TYPES
       assert_equal response_types.length, 7
-      assert_equal response_types[0], 'Choice'
-      assert_equal response_types[1], 'Botcontinue'
-      assert_equal response_types[2], 'Single line text'
-      assert_equal response_types[3], 'Multi line text'
-      assert_equal response_types[4], 'Dropdown'
-      assert_equal response_types[5], 'Date'
-      assert_equal response_types[6], 'Attach'
+      assert_equal response_types['ch'], 'Choice'
+      assert_equal response_types['cnt'], 'Botcontinue'
+      assert_equal response_types['slt'], 'Single line text'
+      assert_equal response_types['mlt'], 'Multi line text'
+      assert_equal response_types['ddw'], 'Dropdown'
+      assert_equal response_types['date'], 'Date'
+      assert_equal response_types['attach'], 'Attach'
 
       message_types = Dialogue::MESSAGE_TYPES
-      assert_equal message_types, ['TEXT', 'VIDEO:YOUTUBE', 'VIDEO:VIMEO', 'LINK', 'IMAGE']
+      assert_equal message_types, { 'txt' => 'TEXT', 'utube' => 'VIDEO:YOUTUBE',
+                      'vimeo' => 'VIDEO:VIMEO', 'link' => 'LINK', 'img' => 'IMAGE'}
     end
 
     def test_message
@@ -40,9 +41,9 @@ module ChatBot
     end
 
     def test_user_input_type
-      assert_equal @dialogue.user_input_type, 0
+      assert_equal @dialogue.user_input_type, 'ch'
 
-      @dialogue.user_input_type = Dialogue::RESPONSE_TYPES.keys.max + 1
+      @dialogue.user_input_type = Faker::Lorem.word
       assert_not @dialogue.save
     end
 

@@ -9,9 +9,9 @@ module ChatBot
 
     slug :name
 
-    validates :name, presence: true, uniqueness: {case_sensitive: false}
+    index({_slug: 1})
 
-    accepts_nested_attributes_for :sub_categories
+    validates :name, presence: true, uniqueness: {case_sensitive: false}
 
     before_validation :squish_name, if: "name.present?"
 

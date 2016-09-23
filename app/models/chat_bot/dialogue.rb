@@ -1,24 +1,32 @@
 module ChatBot
   class Dialogue
     include Mongoid::Document
+    include Mongoid::Slug
 
-    RESPONSE_TYPES = { 0 => 'Choice', 1 => 'Botcontinue',
-                       2 => 'Single line text', 3 => 'Multi line text',
-                       4 => 'Dropdown', 5 => 'Date', 6 => 'Attach'}
+    slug do |cur_object|
+      cur_object.code.gsub('.', '_').to_url
+    end
 
-    MESSAGE_TYPES = ['TEXT', 'VIDEO:YOUTUBE', 'VIDEO:VIMEO', 'LINK', 'IMAGE']
+    RESPONSE_TYPES = { 'ch' => 'Choice', 'cnt' => 'Botcontinue',
+                       'slt' => 'Single line text', 'mlt' => 'Multi line text',
+                       'ddw' => 'Dropdown', 'date' => 'Date', 'attach' => 'Attach'}
+
+    MESSAGE_TYPES = { 'txt' => 'TEXT', 'utube' => 'VIDEO:YOUTUBE',
+                      'vimeo' => 'VIDEO:VIMEO', 'link' => 'LINK', 'img' => 'IMAGE'}
 
     field :code, type: String
     field :message, type: String
-    field :user_input_type, type: Integer, default: 0
-    field :message_type, type: String, default: 'TEXT'
+    field :user_input_type, type: String, default: 'ch'
+    field :message_type, type: String, default: 'txt'
 
     has_many :options, class_name: 'ChatBot::Option', primary_key: :code, inverse_of: :dialogue
     belongs_to :sub_category, class_name: 'ChatBot::SubCategory'
 
+    index({_slug: 1})
+
     validates :message, presence: true
     validates :user_input_type, inclusion: RESPONSE_TYPES.keys
-    validates :message_type, inclusion: MESSAGE_TYPES
+    validates :message_type, inclusion: MESSAGE_TYPES.keys
     validates :sub_category, presence: true
 
     accepts_nested_attributes_for :options
