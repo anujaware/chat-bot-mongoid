@@ -1,6 +1,0 @@
-if("#{@category.valid?}" == 'true'){
-$('.selectpicker').selectpicker('refresh');
-$('#new-category').modal('hide');
-}else{
-$('#errors').html("#{@category.errors.full_messages.join(',')}");
-}
