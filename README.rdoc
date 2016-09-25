@@ -1,3 +1,23 @@
 = ChatBot
 
-This project rocks and uses MIT-LICENSE.
+Models:
+Category
+  Has many sub categories
+
+SubCategory
+  Has many dialgoues
+  Has one initial dialogue
+
+Dialog
+        code: Code generation (Done!)
+ (flag) message_type: Text/Link/Youtube/Vimeo/Image
+ (flag) user_input_type: Choice/Botcontinue/Single line text/Multiline text/Dropdown/Date/Attach
+
+Option
+
+
+Future enhancement:
+Start on - Dynamic - User should be able to add his/her own methods to define scheduling logic
+Word replacement - Specify a list of methods having a particular format.
+                   Method should be defined for them.
+                   Which will be replaced in dialog if found.
