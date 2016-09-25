@@ -9,7 +9,8 @@ module ChatBot
     field :interval, type: String
 
     belongs_to :category, class_name: 'ChatBot::Category'
-    has_many :dialogues, class_name: 'ChatBot::Dialogue', foreign_key: :code
+    has_one :initial_dialog, class_name: 'ChatBot::Dialog', foreign_key: :code, inverse_of: nil
+    has_many :dialogs, class_name: 'ChatBot::Dialog', foreign_key: :code
 
     slug :name
 
@@ -19,7 +20,7 @@ module ChatBot
     validates :category, :description, presence: true
     validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
 
-    accepts_nested_attributes_for :dialogues
+    #accepts_nested_attributes_for :dialogs
 
     before_validation :squish_name, if: "name.present?"
 

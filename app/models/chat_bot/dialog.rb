@@ -1,5 +1,5 @@
 module ChatBot
-  class Dialogue
+  class Dialog
     include Mongoid::Document
     include Mongoid::Slug
 
@@ -19,7 +19,7 @@ module ChatBot
     field :user_input_type, type: String, default: 'ch'
     field :message_type, type: String, default: 'txt'
 
-    has_many :options, class_name: 'ChatBot::Option', primary_key: :code, inverse_of: :dialogue
+    has_many :options, class_name: 'ChatBot::Option', primary_key: :code, inverse_of: :dialog
     belongs_to :sub_category, class_name: 'ChatBot::SubCategory'
 
     index({_slug: 1})
@@ -29,7 +29,7 @@ module ChatBot
     validates :message_type, inclusion: MESSAGE_TYPES.keys
     validates :sub_category, presence: true
 
-    accepts_nested_attributes_for :options
+    #accepts_nested_attributes_for :options
 
     def self.generate_code(for_code = nil)
       if for_code.present?
@@ -37,7 +37,7 @@ module ChatBot
 
         base, precision = match_number[1].to_i, match_number[3]
         precision = precision.to_i if precision.present? # We don't want nil or '' to convert to 0
-        existing_codes = Dialogue.all.collect(&:code)
+        existing_codes = all.collect(&:code)
 
         # Logic will work as follows:
         # if for_code is T123.45 will return

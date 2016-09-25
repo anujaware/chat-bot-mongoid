@@ -9,24 +9,24 @@ module ChatBot
     def setup
       @sub_category = SubCategory.create name: 'App Intro',
         category: Category.new(name: 'Introduction')
-      @dialogue = Dialogue.new code: 'T20', message: Faker::Lorem.sentence,
+      @dialog = Dialog.new code: 'T20', message: Faker::Lorem.sentence,
         sub_category: @sub_category#, options: [Option.new(name: Faker::Lorem.word)]
-      @option = Option.new name: Faker::Lorem.word, dialogue: @dialogue
+      @option = Option.new name: Faker::Lorem.word, dialog: @dialog
     end
 
     def test_name
       @option.name = ''
       assert_not @option.save
 
-      @dialogue.user_input_type = 1
-      @dialogue.save
+      @dialog.user_input_type = 1
+      @dialog.save
 
       @option.name = Faker::Lorem.word
       assert @option.save
     end
 
-    def test_parent_dialogue
-      @option.dialogue = nil
+    def test_parent_dialog
+      @option.dialog = nil
       assert_not @option.save
     end
 
@@ -34,12 +34,12 @@ module ChatBot
       @option.decision = nil
       assert @option.save
 
-      @dialogue = Dialogue.new code: 'T40', message: Faker::Lorem.sentence, sub_category: @sub_category
-      dialogue_codes = @sub_category.dialogue_ids
+      @dialog = Dialog.new code: 'T40', message: Faker::Lorem.sentence, sub_category: @sub_category
+      dialog_codes = @sub_category.dialog_ids
       @option.decision_id = 'T20'
       assert_not @option.save
 
-      @option.decision_id = dialogue_codes.sample
+      @option.decision_id = dialog_codes.sample
       assert @option.save
     end
 
