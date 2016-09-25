@@ -22,6 +22,8 @@ module ChatBot
     has_many :options, class_name: 'ChatBot::Option', primary_key: :code, inverse_of: :dialog
     belongs_to :sub_category, class_name: 'ChatBot::SubCategory'
 
+    attr_accessor :parent_dialog_code
+
     index({_slug: 1})
 
     validates :message, presence: true
@@ -29,8 +31,10 @@ module ChatBot
     validates :message_type, inclusion: MESSAGE_TYPES.keys
     validates :sub_category, presence: true
 
+    before_validation :set_dialog_code, on: :create
     #accepts_nested_attributes_for :options
 
+    ## Class methods
     def self.generate_code(for_code = nil)
       if for_code.present?
         match_number = for_code.match(/^T(\d*)(\.(\d*))?$/)
@@ -61,6 +65,11 @@ module ChatBot
       else
         "T#{all.collect{|d| d.code.split('.').first.gsub('T', '').to_i}.sort.last.to_i + 1}"
       end
+    end
+
+    ## Object methods
+    def set_dialog_code
+      self.code = Dialog.generate_code(parent_dialog_code) if code.nil?
     end
 
   end

@@ -56,6 +56,13 @@ module ChatBot
       assert_not @dialog.save
     end
 
+    def test_before_save
+      Dialog.destroy_all
+      dialog = Dialog.create message: Faker::Lorem.sentence, sub_category: @sub_category
+      assert dialog.save
+      assert_equal dialog.code, 'T1'
+    end
+
     def test_generate_code
        assert_equal Dialog.generate_code, 'T411'
     end
