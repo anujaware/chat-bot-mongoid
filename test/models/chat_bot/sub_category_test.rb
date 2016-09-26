@@ -101,25 +101,18 @@ module ChatBot
             @msg_2 = 'aBcd-eFg'
             @dialog_2.update_attributes(message: @msg_2, user_input_type: 'cnt', message_type: 'utube')
 
-            assert_equal SubCategory.next_dialogue(@option_11.id), { id: @dialog_2.slug, message: @msg_2, user_input_type: 'cnt',
-                                                                     formatted_message: @msg_2,
-                                                                     # formatted_message: "<iframe width='229' height='200'
-                                                                     # src='https://www.youtube.com/embed/aBcd-eFg' frameborder='0'
-                                                                     # allowfullscreen></iframe>",
-                                                                      options: @option_json}
+            assert_equal SubCategory.next_dialogue(@option_11.id), { 
+              id: @dialog_2.slug, message: @msg_2, user_input_type: 'cnt',
+              formatted_message: "<iframe width='229' height='200' src='https://www.youtube.com/embed/aBcd-eFg' frameborder='0' allowfullscreen></iframe>", options: @option_json}
           end
 
           it '"slt" i.e. Single line text & formatted message including iframe tag to display vimeo video' do
             @msg_2 = '1234321'
             @dialog_2.update_attributes(message: @msg_2, user_input_type: 'slt', message_type: 'vimeo')
 
-            assert_equal SubCategory.next_dialogue(@option_11.id), { id: @dialog_2.slug, message: @msg_2, user_input_type: 'slt',
-                                                                     formatted_message: @msg_2,
-                                                                     # formatted_message: "<iframe width='229' height='200'
-                                                                     # src='https://player.vimeo.com/video/#{@msg_2}'
-                                                                     # frameborder='0' webkitallowfullscreen
-                                                                     # mozallowfullscreen allowfullscreen></iframe>",
-                                                                      options: @option_json}
+            assert_equal SubCategory.next_dialogue(@option_11.id), {
+              id: @dialog_2.slug, message: @msg_2, user_input_type: 'slt',
+              formatted_message: "<iframe width='229' height='200' src='https://player.vimeo.com/video/#{@msg_2}' frameborder='0' webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>", options: @option_json}
           end
 
           it '"mlt" i.e. Multi line text & formatted message including link tag' do
@@ -127,9 +120,8 @@ module ChatBot
             @dialog_2.update_attributes(message: @msg_2, user_input_type: 'mlt', message_type: 'link')
 
             assert_equal SubCategory.next_dialogue(@option_11.id), { id: @dialog_2.slug, message: @msg_2, user_input_type: 'mlt',
-                                                                     formatted_message: @msg_2,
-                                                                      #formatted_message: "<a href='#{@msg_2}' target='_'>Click here.</a>",
-                                                                      options: @option_json}
+                                                                     formatted_message: "<a href='#{@msg_2}' target='_'>Click here.</a>",
+                                                                     options: @option_json}
           end
 
           it '"ddw" i.e. dropdown & formatted message including image tag' do
@@ -137,8 +129,7 @@ module ChatBot
             @dialog_2.update_attributes(message: @msg_2, user_input_type: 'ddw', message_type: 'img')
 
             assert_equal SubCategory.next_dialogue(@option_11.id), { id: @dialog_2.slug, message: @msg_2, user_input_type: 'ddw',
-                                                                     formatted_message: @msg_2,
-                                                                     #formatted_message: "<img src=#{@msg_2}/>",
+                                                                     formatted_message: "<img src=#{@msg_2}/>",
                                                                      options: @option_json}
 
           end
@@ -147,7 +138,6 @@ module ChatBot
             @dialog_2.update_attributes(user_input_type: 'attach')
             assert_equal SubCategory.next_dialogue(@option_11.id), { id: @dialog_2.slug, message: @msg_2, user_input_type: 'attach',
                                                                      formatted_message: @msg_2,
-                                                                     #formatted_message: "<img src=#{@msg_2}/>",
                                                                      options: @option_json}
           end
         end

@@ -83,7 +83,18 @@ module ChatBot
     end
 
     def formatted_message
-      message
+      case message_type
+      when 'utube'
+        "<iframe width='229' height='200' src='https://www.youtube.com/embed/#{message}' frameborder='0' allowfullscreen></iframe>"
+      when 'vimeo'
+        "<iframe width='229' height='200' src='https://player.vimeo.com/video/#{message}' frameborder='0' webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>"
+      when 'link'
+        "<a href='#{message}' target='_'>Click here.</a>"
+      when 'img'
+        "<img src=#{message}/>"
+      else
+        message
+      end
     end
 
   end
