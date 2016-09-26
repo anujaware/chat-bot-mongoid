@@ -30,7 +30,7 @@ module ChatBot
       dialog.data_attributes
     end
 
-    def self.next_dialogue(option_id)
+    def self.next_dialog(option_id)
       option = Option.find_by(id: option_id)
       return nil if !option or !option.decision
       dialog = option.decision

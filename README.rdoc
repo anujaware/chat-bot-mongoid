@@ -1,6 +1,15 @@
 = ChatBot
 
-Models:
+
+*Exiting* *functionality:*
+
+1. User can import data to decision tree
+2. Added two methods in sub category model 
+   1. *start* - It accepts sub category and return json for initial dialog
+   2. *next_dialog* - It accepts option id (selected by the user) and return json for the decision (next dialog) or nil if doesn't exists.
+
+*Models:*
+
 Category
   Has many sub categories
 
@@ -14,10 +23,12 @@ Dialog
  (flag) user_input_type: Choice/Botcontinue/Single line text/Multiline text/Dropdown/Date/Attach
 
 Option
+  Belongs to dialog
+  Has one decision (next dialog)
 
 
-Future enhancement:
-Start on - Dynamic - User should be able to add his/her own methods to define scheduling logic
-Word replacement - Specify a list of methods having a particular format.
-                   Method should be defined for them.
-                   Which will be replaced in dialog if found.
+*Future* *enhancement:*
+
+1. Maintain state of the conversation
+2. Conversation scheduling - Dynamic - User should be able to add his/her own methods to define scheduling logic
+3. Word replacement - Specify a list of methods having a particular format. Method should be defined. Which will be replaced in dialog if found.
