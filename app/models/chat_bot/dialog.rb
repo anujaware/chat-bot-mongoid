@@ -72,5 +72,19 @@ module ChatBot
       self.code = Dialog.generate_code(parent_dialog_code) if code.nil?
     end
 
+    def data_attributes
+      { id: slug, message: message,
+        user_input_type: user_input_type,
+        formatted_message: formatted_message,
+        options: options.collect{|option|
+          {id: option.id, name: option.name}
+        }
+      }
+    end
+
+    def formatted_message
+      message
+    end
+
   end
 end

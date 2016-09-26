@@ -9,7 +9,7 @@ module ChatBot
     field :interval, type: String
 
     belongs_to :category, class_name: 'ChatBot::Category'
-    has_one :initial_dialog, class_name: 'ChatBot::Dialog', foreign_key: :code, inverse_of: nil
+    belongs_to :initial_dialog, class_name: 'ChatBot::Dialog', foreign_key: :code, inverse_of: nil
     has_many :dialogs, class_name: 'ChatBot::Dialog', foreign_key: :code
 
     slug :name
@@ -24,6 +24,20 @@ module ChatBot
 
     before_validation :squish_name, if: "name.present?"
 
+    ## Class methods
+    def self.start(sub_category)
+      dialog = sub_category.initial_dialog
+      dialog.data_attributes
+    end
+
+    def self.next_dialogue(option_id)
+      option = Option.find_by(id: option_id)
+      return nil if !option or !option.decision
+      dialog = option.decision
+      dialog.data_attributes
+    end
+
+    ## Object methods
     def squish_name
       # Squish doesn't work if name contains new line character in single quote while testing
       # TODO: Fix using gsub if issue occur in application
