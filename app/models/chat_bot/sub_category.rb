@@ -3,10 +3,15 @@ module ChatBot
     include Mongoid::Document
     include Mongoid::Slug
 
+    STARTS_ON = ['after_dialog', 'after_days', 'immediate']
+
     field :name, type: String
     field :description, type: String
     field :repeat_limit, type: Integer, default: 0
     field :interval, type: String
+    field :approval_require, type: Boolean, default: false
+    field :priority, type: Integer, default: 1
+    field :starts_on, type: String, default: :immediate
 
     belongs_to :category, class_name: 'ChatBot::Category'
     belongs_to :initial_dialog, class_name: 'ChatBot::Dialog', foreign_key: :code, inverse_of: nil
@@ -19,6 +24,8 @@ module ChatBot
     validates :name, presence: true, uniqueness: { case_sensitive: false, scope: [:category] }
     validates :category, :description, presence: true
     validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
+    validates :priority, numericality: {only_integer: true, greater_than: 0, less_than: 11}
+    validates :starts_on, inclusion: { in: STARTS_ON }
 
     #accepts_nested_attributes_for :dialogs
 
