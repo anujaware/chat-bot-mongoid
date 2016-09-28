@@ -4,7 +4,8 @@ module ChatBot
     include Mongoid::Timestamps
 
     include Mongoid::History::Trackable
-    track_history :modifier_field => :modifier
+    track_history :on => [:fields],
+                  :modifier_field => :modifier
 
     field :name, type: String
     field :interval, type: String
