@@ -8,7 +8,6 @@ module ChatBot
     track_history :on => [:fields],
                   :modifier_field => :modifier
 
-
     slug do |cur_object|
       cur_object.code.gsub('.', '_').to_url
     end
