@@ -16,6 +16,7 @@ gemspec
 
 gem 'mongoid', '~>5.1.4'
 gem 'mongoid-slug'
+gem 'aasm'
 
 group :test do
   gem 'minitest-line'

@@ -22,7 +22,7 @@ module ChatBot
     index({_slug: 1})
 
     validates :name, presence: true, uniqueness: { case_sensitive: false, scope: [:category] }
-    validates :category, :description, presence: true
+    validates :category, :description, presence: true #initial_dialog
     validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
     validates :priority, numericality: {only_integer: true, greater_than: 0, less_than: 11}
     validates :starts_on, inclusion: { in: STARTS_ON }

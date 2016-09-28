@@ -3,8 +3,7 @@ module ChatBot
     include Mongoid::Document
     field :name, type: String
 
-    #Will come in the picture along with the scheduling logic
-    #field :interval, type: String
+    field :interval, type: String
 
     field :deprecated, type: Mongoid::Boolean, default: false
 
@@ -15,6 +14,6 @@ module ChatBot
     validates :dialog, presence: true
     validates :decision, inclusion: { in: Proc.new{|option|
       option.dialog.sub_category.dialog_ids }}, allow_blank: true
-    #validates :interval, format: { with: /\ADAY:(\d+)\z/i }, allow_blank: true
+    validates :interval, format: { with: /\ADAY:(\d+)\z/i }, allow_blank: true
   end
 end
