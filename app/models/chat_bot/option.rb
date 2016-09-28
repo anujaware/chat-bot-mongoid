@@ -1,6 +1,7 @@
 module ChatBot
   class Option
     include Mongoid::Document
+    include Mongoid::Timestamps
 
     include Mongoid::History::Trackable
     track_history :modifier_field => :modifier

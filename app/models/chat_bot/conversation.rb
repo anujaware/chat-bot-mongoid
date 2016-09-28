@@ -1,6 +1,7 @@
 module ChatBot
   class Conversation
     include Mongoid::Document
+    include Mongoid::Timestamps
     include AASM
 
     include Mongoid::History::Trackable

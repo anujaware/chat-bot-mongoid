@@ -1,6 +1,7 @@
 module ChatBot
   class Dialog
     include Mongoid::Document
+    include Mongoid::Timestamps
     include Mongoid::Slug
 
     include Mongoid::History::Trackable
