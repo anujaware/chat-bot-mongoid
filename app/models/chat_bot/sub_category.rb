@@ -3,6 +3,10 @@ module ChatBot
     include Mongoid::Document
     include Mongoid::Slug
 
+    include Mongoid::History::Trackable
+    track_history :modifier_field => :modifier
+
+
     STARTS_ON = ['after_dialog', 'after_days', 'immediate']
 
     field :name, type: String

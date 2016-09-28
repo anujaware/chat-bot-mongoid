@@ -1,10 +1,12 @@
 module ChatBot
   class Option
     include Mongoid::Document
+
+    include Mongoid::History::Trackable
+    track_history :modifier_field => :modifier
+
     field :name, type: String
-
     field :interval, type: String
-
     field :deprecated, type: Mongoid::Boolean, default: false
 
     belongs_to :dialog, class_name: 'ChatBot::Dialog'

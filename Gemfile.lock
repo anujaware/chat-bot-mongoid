@@ -50,6 +50,7 @@ GEM
     builder (3.2.2)
     concurrent-ruby (1.0.2)
     database_cleaner (1.5.3)
+    easy_diff (1.0.0)
     erubis (2.7.0)
     faker (1.6.6)
       i18n (~> 0.5)
@@ -99,6 +100,11 @@ GEM
     mongoid-fixture_set (1.5.0)
       activesupport (~> 4.0)
       mongoid (>= 4.0)
+    mongoid-history (0.6.0)
+      activesupport
+      easy_diff
+      mongoid (>= 3.0)
+      mongoid-compatibility
     mongoid-minitest (1.1.0)
       minitest (~> 5.0)
       minitest-activemodel (~> 1.1)
@@ -175,6 +181,7 @@ DEPENDENCIES
   minitest-matchers
   mongoid (~> 5.1.4)
   mongoid-fixture_set
+  mongoid-history
   mongoid-minitest
   mongoid-slug
   shoulda (~> 3.5)

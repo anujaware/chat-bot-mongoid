@@ -3,6 +3,10 @@ module ChatBot
     include Mongoid::Document
     include AASM
 
+    include Mongoid::History::Trackable
+    track_history :modifier_field => :modifier
+
+
     field :aasm_state
     field :viewed_count, type: Integer, default: 0
 

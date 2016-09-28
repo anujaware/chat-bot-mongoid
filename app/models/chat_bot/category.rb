@@ -3,6 +3,10 @@ module ChatBot
     include Mongoid::Document
     include Mongoid::Slug
 
+    include Mongoid::History::Trackable
+    track_history :modifier_field => :modifier
+
+
     field :name, type: String
 
     has_many :sub_categories, class_name: 'ChatBot::SubCategory'

@@ -3,6 +3,10 @@ module ChatBot
     include Mongoid::Document
     include Mongoid::Slug
 
+    include Mongoid::History::Trackable
+    track_history :modifier_field => :modifier
+
+
     slug do |cur_object|
       cur_object.code.gsub('.', '_').to_url
     end
