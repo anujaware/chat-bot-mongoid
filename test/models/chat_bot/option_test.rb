@@ -3,8 +3,8 @@ require './test/test_helper'
 module ChatBot
   class OptionTest < ActiveSupport::TestCase
 
-    #should_not allow_value('DA:3').for(:interval)
-    #should_not allow_value('3').for(:interval)
+    should_not allow_value('DA:3').for(:interval)
+    should_not allow_value('3').for(:interval)
 
     def setup
       @sub_category = SubCategory.create name: 'App Intro',
@@ -43,7 +43,6 @@ module ChatBot
       assert @option.save
     end
 
-=begin
     def test_interval
       # format DAY:[Number]
       @option.interval = 'DA:23'
@@ -52,6 +51,5 @@ module ChatBot
       @option.interval = 'DAY:21'
       assert @option.save
     end
-=end
   end
 end

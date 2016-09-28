@@ -20,6 +20,7 @@ module ChatBot
     def test_validate_name
       assert @sub_category.save
 
+      ## Uniqueness
       sub_category = SubCategory.new category: @category, name: 'Application Intro'
       assert_not sub_category.save, 'Name is duplicate'
 
@@ -34,7 +35,9 @@ module ChatBot
         name: 'Application Intro',
         description: Faker::Lorem.sentence
       assert sub_category.save, 'Same sub category under two different categories.'
+      ## Uniqueness END
 
+      ## Presence
       @sub_category.name = ''
       assert_not @sub_category.save, 'Name is blank/nil'
     end
