@@ -5,7 +5,8 @@ module ChatBot
     include AASM
 
     include Mongoid::History::Trackable
-    track_history :modifier_field => :modifier
+    track_history :on => [:fields],
+                  :modifier_field => :modifier
 
 
     field :aasm_state
@@ -47,10 +48,17 @@ module ChatBot
 
     validates :sub_category, :dialog, presence: true
     validates :viewed_count, numericality: { only_integer: true, greater_than: -1 }
+    validates :sub_category, uniqueness: { scope: :created_for}
+
+    before_validation :set_defaults, on: :create
 
     def increase_viewed_count
       self.viewed_count += 1
       save
+    end
+
+    def set_defaults
+      self.dialog = self.sub_category.try(:initial_dialog)
     end
 
   end
