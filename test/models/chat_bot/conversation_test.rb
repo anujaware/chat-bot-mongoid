@@ -49,6 +49,28 @@ module ChatBot
         end
       end
 
+      context 'Method' do
+        it '#shedule' do
+          { 'after_dialog' => @dialog.code, 'after_days' => 4, 'immediate' => nil }.each do |key, val|
+            sub_category = SubCategory.new name: Faker::Lorem.words(2),
+              category: @category,
+              description: Faker::Lorem.sentence,
+              starts_on_key: key,
+              starts_on_val: val,
+              is_ready_to_schedule: true
+
+            dialog = Dialog.create message: Faker::Lorem.sentence, sub_category: sub_category
+
+            sub_category.update_attribute(:initial_dialog, dialog)
+          end
+
+          Conversation.schedule(@user)
+          assert @user.conversations.count, 2
+          assert @user.conversations.detect{|conv| conv.scheduled_at == Date.current}
+          assert @user.conversations.detect{|conv| conv.scheduled_at == Date.current + 4.days}
+        end
+      end
+
     end
 
   end

@@ -8,7 +8,7 @@ module ChatBot
     end
     should validate_numericality_of(:repeat_limit).only_integer.is_greater_than(-1)
     should validate_numericality_of(:priority).only_integer.is_less_than(11).is_greater_than(0)
-    should validate_inclusion_of(:starts_on).in_array(SubCategory::STARTS_ON)
+    should validate_inclusion_of(:starts_on_key).in_array(SubCategory::STARTS_ON)
 
     def setup
       @category = Category.new name: 'Introduction'
