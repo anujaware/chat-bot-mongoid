@@ -8,7 +8,6 @@ module ChatBot
     track_history :on => [:fields],
                   :modifier_field => :modifier
 
-
     STARTS_ON = ['after_dialog', 'after_days', 'immediate']
 
     field :name, type: String
@@ -17,7 +16,9 @@ module ChatBot
     field :interval, type: String
     field :approval_require, type: Boolean, default: false
     field :priority, type: Integer, default: 1
-    field :starts_on, type: String, default: :immediate
+    field :starts_on_key, type: String, default: :immediate
+    field :starts_on_val, type: String
+    field :is_ready_to_schedule, type: Boolean, default: false
 
     belongs_to :category, class_name: 'ChatBot::Category'
     belongs_to :initial_dialog, class_name: 'ChatBot::Dialog', foreign_key: :code, inverse_of: nil
@@ -25,15 +26,15 @@ module ChatBot
 
     slug :name
 
+    scope :ready, -> {where(is_ready_to_schedule: true)}
+
     index({_slug: 1})
 
     validates :name, presence: true, uniqueness: { case_sensitive: false, scope: [:category] }
     validates :category, :description, presence: true #initial_dialog
     validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
     validates :priority, numericality: {only_integer: true, greater_than: 0, less_than: 11}
-    validates :starts_on, inclusion: { in: STARTS_ON }
-
-    #accepts_nested_attributes_for :dialogs
+    validates :starts_on_key, inclusion: { in: STARTS_ON }
 
     before_validation :squish_name, if: "name.present?"
 

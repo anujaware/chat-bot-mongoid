@@ -11,6 +11,7 @@ module ChatBot
 
     field :aasm_state
     field :viewed_count, type: Integer, default: 0
+    field :scheduled_at, type: DateTime
 
     belongs_to :sub_category, class_name: 'ChatBot::SubCategory', inverse_of: nil
     belongs_to :dialog, class_name: 'ChatBot::Dialog', foreign_key: :code, inverse_of: nil
@@ -52,13 +53,25 @@ module ChatBot
 
     before_validation :set_defaults, on: :create
 
+    # Class methods
+    def self.schedule(user)
+      SubCategory.ready.each do |sub_cat|
+        create(sub_category: sub_cat, created_for: user)
+      end
+    end
+
+    # Object methods
     def increase_viewed_count
       self.viewed_count += 1
       save
     end
 
     def set_defaults
-      self.dialog = self.sub_category.try(:initial_dialog)
+      self.dialog = sub_category.try(:initial_dialog)
+    end
+
+    def restart
+      set_defaults
     end
 
   end
