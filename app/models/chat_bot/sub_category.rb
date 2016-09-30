@@ -8,7 +8,10 @@ module ChatBot
     track_history :on => [:fields],
                   :modifier_field => :modifier
 
-    STARTS_ON = ['after_dialog', 'after_days', 'immediate']
+    AFTER_DIALOG = 'after_dialog'
+    AFTER_DAYS = 'after_days'
+    IMMEDIATE = 'immediate'
+    STARTS_ON = [AFTER_DIALOG, AFTER_DAYS, IMMEDIATE]
 
     field :name, type: String
     field :description, type: String

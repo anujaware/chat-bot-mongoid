@@ -56,10 +56,11 @@ module ChatBot
     # Class methods
     def self.schedule(user)
       SubCategory.ready.each do |sub_cat|
-        create(sub_category: sub_cat,
-               created_for: user,
-               scheduled_at: calculate_scheduled_date(sub_cat.starts_on_key, sub_cat.starts_on_val)
-              )
+        scheduled_date = calculate_scheduled_date(sub_cat.starts_on_key, sub_cat.starts_on_val)
+        if scheduled_date.present?
+          conversation = find_or_create_by({sub_category: sub_cat, created_for: user})
+          conversation.update_attribute(:scheduled_at, scheduled_date)
+        end
       end
     end
 
