@@ -59,7 +59,9 @@ module ChatBot
         scheduled_date = calculate_scheduled_date(sub_cat.starts_on_key, sub_cat.starts_on_val)
         if scheduled_date.present?
           conversation = find_or_create_by({sub_category: sub_cat, created_for: user})
-          conversation.update_attribute(:scheduled_at, scheduled_date)
+          state = sub_cat.approval_require ? 'scheduled' : 'released'
+          conversation.update_attributes({scheduled_at: scheduled_date,
+                                          aasm_state: state})
         end
       end
     end
@@ -86,11 +88,12 @@ module ChatBot
     end
 
     def set_defaults
-      self.dialog = sub_category.try(:initial_dialog)
+      restart
+      self.schedule! if sub_category.try(:approval_require)
     end
 
     def restart
-      set_defaults
+      self.dialog = sub_category.try(:initial_dialog)
     end
 
   end

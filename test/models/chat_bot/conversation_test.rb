@@ -86,6 +86,9 @@ module ChatBot
 
               assert_equal SubCategory.count, 4
               Conversation.schedule(@user)
+              Conversation.all.each do |conv|
+                assert conv.released?
+              end
           end
 
           context 'create conversations' do
@@ -107,6 +110,20 @@ module ChatBot
                 assert_equal conv.scheduled_at, Date.current + 4.days
               end
             end
+
+            it 'and do not release it if approval required' do
+              sub_category = SubCategory.new name: Faker::Lorem.words(2),
+                category: @category,
+                description: Faker::Lorem.sentence,
+                is_ready_to_schedule: true,
+                approval_require: true
+
+              dialog = Dialog.create message: Faker::Lorem.sentence, sub_category: sub_category
+
+              #sub_category.update_attribute(:initial_dialog, dialog)
+              Conversation.schedule(@user)
+              assert Conversation.find_by(aasm_state: 'scheduled').present?
+            end
           end
 
           context 'not create conversations' do
@@ -123,10 +140,15 @@ module ChatBot
               sub_category = SubCategory.new name: Faker::Lorem.words(2),
                 category: @category,
                 description: Faker::Lorem.sentence,
-                starts_on_key: SubCategory::IMMEDIATE,
                 is_ready_to_schedule: true
+
+              dialog = Dialog.create message: Faker::Lorem.sentence, sub_category: sub_category
+
+              sub_category.update_attribute(:initial_dialog, dialog)
               conv_count = Conversation.count
               Conversation.schedule(@user)
+              conv = Conversation.where(sub_category: sub_category).first
+              assert conv.present?
               assert (conv_count == (Conversation.count - 1))
             end
 
