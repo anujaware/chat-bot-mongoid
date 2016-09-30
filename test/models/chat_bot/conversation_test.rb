@@ -9,7 +9,7 @@ module ChatBot
 
     describe 'Conversation' do
 
-      before do
+      def create_dialog
         @category = Category.new name: 'Introduction'
         @sub_category = SubCategory.new name: 'Application Intro',
           category: @category,
@@ -19,59 +19,120 @@ module ChatBot
 
         @sub_category.update_attribute(:initial_dialog, @dialog)
         assert_equal @sub_category.reload.initial_dialog, @dialog
-
-        class User
-          include Mongoid::Document
-
-          has_many :conversations, class_name: 'ChatBot::Conversation', as: :created_for
-        end
-        @user = User.create()
       end
 
-      context 'Validation' do
-        context 'conversation should' do
-          it 'not be saved if sub category is already exists under a scope of created_for' do
+      after do
+        DatabaseCleaner.clean
+      end
 
+      describe '' do
+        before do
+          create_dialog
+          class User
+            include Mongoid::Document
+
+            has_many :conversations, class_name: 'ChatBot::Conversation', as: :created_for
+          end
+          @user = User.create()
+        end
+
+        context 'Validation' do
+          context 'conversation should' do
+            it 'not be saved if sub category is already exists under a scope of created_for' do
+              @conv_1 = Conversation.new(sub_category: @sub_category, created_for: @user)
+              assert @conv_1.save
+              @conv_2 = Conversation.new(sub_category: @sub_category, created_for: @user)
+              assert !@conv_2.save
+            end
+
+          end
+        end
+
+        context 'Callbacks' do
+          it 'should set dialog to initial dialog on create' do
             @conv_1 = Conversation.new(sub_category: @sub_category, created_for: @user)
             assert @conv_1.save
-            @conv_2 = Conversation.new(sub_category: @sub_category, created_for: @user)
-            assert !@conv_2.save
+            assert @conv_1.dialog.present?
+          end
+        end
+      end
+
+      describe 'Methods' do
+        context '#shedule should' do
+          before do
+            create_dialog
+            class User
+              include Mongoid::Document
+
+              has_many :conversations, class_name: 'ChatBot::Conversation', as: :created_for
+            end
+            @user = User.create()
+            @sub_cat_dialog, @sub_cat_days, @sub_cat_imm = {
+              'after_dialog' => @dialog.code,
+              'after_days' => 4,
+              'immediate' => nil }.collect do |key, val|
+                sub_category = SubCategory.new name: Faker::Lorem.words(2),
+                  category: @category,
+                  description: Faker::Lorem.sentence,
+                  starts_on_key: key,
+                  starts_on_val: val,
+                  is_ready_to_schedule: true
+
+                dialog = Dialog.create message: Faker::Lorem.sentence, sub_category: sub_category
+
+                sub_category.update_attribute(:initial_dialog, dialog)
+                sub_category
+              end
+
+              assert_equal SubCategory.count, 4
+              Conversation.schedule(@user)
           end
 
-        end
-      end
+          context 'create conversations' do
+            it 'which are marked as ready to scheduled' do
+              assert (SubCategory.count > SubCategory.ready.count)
+              assert_equal @user.conversations.count, 2
+            end
 
-      context 'Callbacks' do
-        it 'should set dialog to initial dialog on create' do
-          @conv_1 = Conversation.new(sub_category: @sub_category, created_for: @user)
-          assert @conv_1.save
-          assert @conv_1.dialog.present?
-        end
-      end
+            context 'and assign appropriate scheduled date to' do
+              it 'current date for immediate' do
+                assert_equal @sub_cat_imm.starts_on_val, nil
+                conv = Conversation.find_by(sub_category_id: @sub_cat_imm.id)
+                assert_equal conv.scheduled_at, Date.current
+              end
 
-      context 'Method' do
-        it '#shedule' do
-          { 'after_dialog' => @dialog.code, 'after_days' => 4, 'immediate' => nil }.each do |key, val|
-            sub_category = SubCategory.new name: Faker::Lorem.words(2),
-              category: @category,
-              description: Faker::Lorem.sentence,
-              starts_on_key: key,
-              starts_on_val: val,
-              is_ready_to_schedule: true
-
-            dialog = Dialog.create message: Faker::Lorem.sentence, sub_category: sub_category
-
-            sub_category.update_attribute(:initial_dialog, dialog)
+              it '4th day from current date' do
+                assert_equal @sub_cat_days.starts_on_val.to_i, 4
+                conv = Conversation.find_by(sub_category: @sub_cat_days)
+                assert_equal conv.scheduled_at, Date.current + 4.days
+              end
+            end
           end
 
-          Conversation.schedule(@user)
-          assert @user.conversations.count, 2
-          assert @user.conversations.detect{|conv| conv.scheduled_at == Date.current}.present?
-          assert @user.conversations.detect{|conv| conv.scheduled_at == Date.current + 4.days}.present?
+          context 'not create conversations' do
+
+            it 'whose starts_on_key is after_dialog' do
+              assert @sub_cat_dialog.present?
+              conv = Conversation.where(sub_category: @sub_cat_dialog)
+              assert !conv.present?
+              count = SubCategory.ready.count
+              assert_equal @user.conversations.count, count - 1
+            end
+
+            it 'if already created' do
+              sub_category = SubCategory.new name: Faker::Lorem.words(2),
+                category: @category,
+                description: Faker::Lorem.sentence,
+                starts_on_key: SubCategory::IMMEDIATE,
+                is_ready_to_schedule: true
+              conv_count = Conversation.count
+              Conversation.schedule(@user)
+              assert (conv_count == (Conversation.count - 1))
+            end
+
+          end
         end
       end
-
     end
-
   end
 end
