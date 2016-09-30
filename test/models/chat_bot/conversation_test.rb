@@ -66,8 +66,8 @@ module ChatBot
 
           Conversation.schedule(@user)
           assert @user.conversations.count, 2
-          assert @user.conversations.detect{|conv| conv.scheduled_at == Date.current}
-          assert @user.conversations.detect{|conv| conv.scheduled_at == Date.current + 4.days}
+          assert @user.conversations.detect{|conv| conv.scheduled_at == Date.current}.present?
+          assert @user.conversations.detect{|conv| conv.scheduled_at == Date.current + 4.days}.present?
         end
       end
 
