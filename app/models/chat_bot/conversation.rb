@@ -56,8 +56,26 @@ module ChatBot
     # Class methods
     def self.schedule(user)
       SubCategory.ready.each do |sub_cat|
-        create(sub_category: sub_cat, created_for: user)
+        create(sub_category: sub_cat,
+               created_for: user,
+               scheduled_at: calculate_scheduled_date(sub_cat.starts_on_key, sub_cat.starts_on_val)
+              )
       end
+    end
+
+    def self.calculate_scheduled_date(starts_on_key, value)
+      self.send(starts_on_key, value)
+    end
+
+    def self.after_dialog(dialog_code)
+    end
+
+    def self.after_days(num)
+      Date.current + num.to_i.days
+    end
+
+    def self.immediate(useless)
+      Date.current
     end
 
     # Object methods
