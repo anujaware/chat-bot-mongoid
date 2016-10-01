@@ -8,10 +8,10 @@ module ChatBot
     track_history :on => [:fields],
                   :modifier_field => :modifier
 
-
     field :aasm_state
     field :viewed_count, type: Integer, default: 0
     field :scheduled_at, type: DateTime
+    field :priority, type: Integer, default: 1
 
     belongs_to :sub_category, class_name: 'ChatBot::SubCategory', inverse_of: nil
     belongs_to :dialog, class_name: 'ChatBot::Dialog', foreign_key: :code, inverse_of: nil
@@ -81,6 +81,10 @@ module ChatBot
       Date.current
     end
 
+    def self.fetch(created_for)
+      #created.for
+    end
+
     # Object methods
     def increase_viewed_count
       self.viewed_count += 1
@@ -89,6 +93,7 @@ module ChatBot
 
     def set_defaults
       restart
+      #self.priority = sub_category.priority
       self.schedule! if sub_category.try(:approval_require)
     end
 
