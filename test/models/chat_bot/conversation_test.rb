@@ -17,6 +17,7 @@ module ChatBot
         @dialog = Dialog.create code: 'T410',
           message: Faker::Lorem.sentence, sub_category: @sub_category
 
+        @sub_category.dialogs << @dialog
         @sub_category.update_attribute(:initial_dialog, @dialog)
         assert_equal @sub_category.reload.initial_dialog, @dialog
         @sub_category
@@ -168,7 +169,11 @@ module ChatBot
       end
 
       it 'increased viewed count at some point'
+
       describe 'After finish i.e. state changed to "finished"' do
+        it 'should "finished" if decision is empty and interval is also empty' do
+        end
+
 
         before do
           @sub_cat_1, @sub_cat_2, @sub_cat_3 = 3.times.collect do |num|
@@ -176,22 +181,38 @@ module ChatBot
           end
 
           @sub_cat_1.update_attributes({priority: 3, starts_on_key: SubCategory::AFTER_DAYS,
-                                        starts_on_val: 2})
+                                        starts_on_val: 2, is_ready_to_schedule: true})
           @sub_cat_2.update_attributes({priority: 3, starts_on_key: SubCategory::AFTER_DAYS,
-                                        starts_on_val: 3})
-          @sub_cat_3.update_attributes({priority: 3, starts_on_key: SubCategory::IMMEDIATE})
+                                        starts_on_val: 3, is_ready_to_schedule: true})
+          @sub_cat_3.update_attributes({priority: 3, starts_on_key: SubCategory::IMMEDIATE,
+                                        is_ready_to_schedule: true})
 
           @d1 = @sub_cat_1.initial_dialog
           @d2 = Dialog.create message: Faker::Lorem.sentence, sub_category: @sub_cat_1
+          @sub_cat_1.dialogs << @d2
+          @sub_cat_1.save
           @d2.options = [Option.create({name: Faker::Lorem.word, interval: 'DAY:5'})]
           @d1.options.create({name: Faker::Lorem.word, decision: @d2})
 
+          class User
+            include Mongoid::Document
+
+            has_many :conversations, class_name: 'ChatBot::Conversation', as: :created_for
+          end
+          @user = User.create()
+
           Conversation.schedule(@user)
           response = Conversation.fetch(@user)
-          response = @d1.data_attributes
+          @conv_1 = @user.conversations.find_by(sub_category: @sub_cat_1)
+          assert_equal response, {conv_id: @conv_1.id,
+                                  dialog_data: @d1.reload.data_attributes}
+          assert @conv_1.started?
+
+          selected_option = @d1.options.first
+          response = Conversation.fetch(@user, selected_option.id)
+          assert_equal @conv_1.reload.option, selected_option
         end
 
-        it 'should "finished" if decision is empty and interval is also empty'
         it 'reschedule after 5 days as interval is DAY:5'
         # Create a conversation with two dialogs
         # Last dialog with option inverval set to DAY:5 and decision set to nil
@@ -221,6 +242,7 @@ module ChatBot
         # After finish first conversation
         # Check -> another conversation has been created
       end
+
       describe 'fetch next conversation with the crieteria' do
         # Create three conversations with different priority
         # state released, scheduled date less than or equal to today
