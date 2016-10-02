@@ -17,6 +17,9 @@ module ChatBot
     belongs_to :dialog, class_name: 'ChatBot::Dialog', foreign_key: :code, inverse_of: nil
     belongs_to :created_for, polymorphic: true
 
+    # To maintain history of selected option by the user
+    belongs_to :option, class_name: 'ChatBot::Option', inverse_of: nil
+
     aasm do
       state :scheduled, :initial => true
       state :released
@@ -51,6 +54,9 @@ module ChatBot
     validates :viewed_count, numericality: { only_integer: true, greater_than: -1 }
     validates :sub_category, uniqueness: { scope: :created_for}
 
+    # There is atmost one started conversation can be exists for an object
+    scope :current,-> { where(aasm_state: 'started')}
+
     before_validation :set_defaults, on: :create
 
     # Class methods
@@ -58,7 +64,7 @@ module ChatBot
       SubCategory.ready.each do |sub_cat|
         scheduled_date = calculate_scheduled_date(sub_cat.starts_on_key, sub_cat.starts_on_val)
         if scheduled_date.present?
-          conversation = find_or_create_by({sub_category: sub_cat, created_for: user})
+          conversation = user.conversations.find_or_create_by({sub_category: sub_cat})
           state = sub_cat.approval_require ? 'scheduled' : 'released'
           conversation.update_attributes({scheduled_at: scheduled_date,
                                           aasm_state: state})
@@ -81,8 +87,20 @@ module ChatBot
       Date.current
     end
 
-    def self.fetch(created_for)
-      #created.for
+    def self.fetch(created_for, option_id = nil)
+      # I will need 3 things here
+      #   1. Created For for fetching next conversation
+      #   2. & 3. Option and conversation in case of fetching next dialog
+      #           of current running conversation
+      if option_id.present?
+        conv = created_for.conversations.current.first
+        conv.update_attribute(:option_id, option_id)
+      else
+        conv = created_for.conversations.first
+        conv.start!
+      end
+      {conv_id: conv.id,
+       dialog_data: conv.dialog.data_attributes}
     end
 
     # Object methods
