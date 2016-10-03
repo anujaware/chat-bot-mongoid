@@ -14,8 +14,7 @@ module ChatBot
         @sub_category = SubCategory.new name: Faker::Lorem.words(2),
           category: @category,
           description: Faker::Lorem.sentence
-        @dialog = Dialog.create code: 'T410',
-          message: Faker::Lorem.sentence, sub_category: @sub_category
+        @dialog = Dialog.create message: Faker::Lorem.sentence, sub_category: @sub_category
 
         @sub_category.dialogs << @dialog
         @sub_category.update_attribute(:initial_dialog, @dialog)
@@ -191,8 +190,11 @@ module ChatBot
           @d2 = Dialog.create message: Faker::Lorem.sentence, sub_category: @sub_cat_1
           @sub_cat_1.dialogs << @d2
           @sub_cat_1.save
+
           @d2.options = [Option.create({name: Faker::Lorem.word, interval: 'DAY:5'})]
-          @d1.options.create({name: Faker::Lorem.word, decision: @d2})
+          o = Option.create({name: Faker::Lorem.word, decision_id: @d2.id, dialog_id: @d1.id})
+
+          @d1.options = [o]
 
           class User
             include Mongoid::Document
@@ -202,23 +204,38 @@ module ChatBot
           @user = User.create()
 
           Conversation.schedule(@user)
+
+          assert_equal @user.conversations.count, 3
+
           response = Conversation.fetch(@user)
           @conv_1 = @user.conversations.find_by(sub_category: @sub_cat_1)
           assert_equal response, {conv_id: @conv_1.id,
                                   dialog_data: @d1.reload.data_attributes}
           assert @conv_1.started?
 
-          selected_option = @d1.options.first
+          selected_option = @d1.options.last
+          assert_equal selected_option.decision, @d2
+
           response = Conversation.fetch(@user, selected_option.id)
           assert_equal @conv_1.reload.option, selected_option
+          assert_equal @conv_1.reload.dialog, @d2
         end
 
-        it 'reschedule after 5 days as interval is DAY:5'
-        # Create a conversation with two dialogs
-        # Last dialog with option inverval set to DAY:5 and decision set to nil
-        # Go through the conversation
-        # Check -> Scheduled date should set, dialog set to initial dialog, should be in released state
+        it 'reschedule after 5 days as interval is DAY:5' do
+          option = @d2.options.first
+          response = Conversation.fetch(@user, option.id)
 
+          ## Here in response either it should return nil or dialog of
+          #  next conversations as current conversation has been finished
+          #assert_equal response, {conv_id: @conv_1.id,
+          #                        dialog_data: @d2.reload.data_attributes}
+
+          assert_equal @conv_1.reload.option, option
+          assert_equal @conv_1.scheduled_at, Date.current + 5.days
+          assert_equal @conv_1.dialog, @d1
+          assert @conv_1.released?
+        end
+=begin
         it 'next time conversation should start from 2nd dialog'
         # Create a conversation with three dialogs -> T1, T2, T3
         # Last dialog with option inverval set to DAY:3 and decision set to T2
@@ -264,6 +281,8 @@ module ChatBot
           it 'not return released conversation with date greater than today'
         end
       end
+=end
     end
   end
+end
 end
