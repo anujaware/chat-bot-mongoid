@@ -24,7 +24,7 @@ module ChatBot
     field :user_input_type, type: String, default: 'ch'
     field :message_type, type: String, default: 'txt'
 
-    has_many :options, class_name: 'ChatBot::Option', primary_key: :code, inverse_of: :dialog
+    has_many :options, class_name: 'ChatBot::Option', inverse_of: :dialog
     belongs_to :sub_category, class_name: 'ChatBot::SubCategory'
 
     attr_accessor :parent_dialog_code

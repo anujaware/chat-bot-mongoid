@@ -45,9 +45,9 @@ module ChatBot
         transitions :from => :started, :to => :finished#, after: :reset_and_reschedule
       end
 
-      #event :reschedule do
-      #  transitions :from => [:started, :finished], :to => :released, after: :update_conversation_on_reschedule
-      #end
+      event :reschedule do
+        transitions :from => [:started, :finished], :to => :released, after: :reschedule
+      end
     end
 
     validates :sub_category, :dialog, presence: true
@@ -88,17 +88,30 @@ module ChatBot
     end
 
     def self.fetch(created_for, option_id = nil)
-      # I will need 3 things here
-      #   1. Created For for fetching next conversation
-      #   2. & 3. Option and conversation in case of fetching next dialog
-      #           of current running conversation
       if option_id.present?
         conv = created_for.conversations.current.first
         conv.update_attribute(:option_id, option_id)
+        option = conv.option
+
+        opt_interval = option.interval
+        opt_decision = option.decision
+
+        if opt_interval.present?
+
+          ## Move this to a method and use it as a aasm call back on reschedule
+          conv.reschedule!
+          interval = opt_interval.match(/DAY:(\d+)/)[1].to_i
+          conv.scheduled_at = Date.current + interval.days
+          conv.dialog = opt_decision ? opt_decision : conv.sub_category.initial_dialog
+        else
+          conv.dialog = opt_decision
+        end
       else
         conv = created_for.conversations.first
         conv.start!
       end
+
+      conv.save
       {conv_id: conv.id,
        dialog_data: conv.dialog.data_attributes}
     end
@@ -112,11 +125,18 @@ module ChatBot
     def set_defaults
       restart
       #self.priority = sub_category.priority
+      # TODO: Not working. self.save goes in inifinite loop
+      #self.initial_dialog = sub_category.initial_dialog
       self.schedule! if sub_category.try(:approval_require)
     end
 
     def restart
       self.dialog = sub_category.try(:initial_dialog)
+    end
+
+    def reschedule
+      # TODO
+      self.aasm_state = 'released'
     end
 
   end
