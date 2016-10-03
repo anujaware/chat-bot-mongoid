@@ -39,14 +39,11 @@ module ChatBot
       end
 
       event :finish do
-        # On finish either finish or reschedule conversation as per the condition
-        # conditions are: if 'interval' is present in selected option of the dialog
-        # and have not exceeded repeat limit of the [dialog/conversation???]
-        transitions :from => :started, :to => :finished#, after: :reset_and_reschedule
+        transitions :from => [:started, :released], :to => :finished
       end
 
       event :reschedule do
-        transitions :from => [:started, :finished], :to => :released, after: :reschedule
+        transitions :from => [:started], :to => :released
       end
     end
 
@@ -58,18 +55,24 @@ module ChatBot
     scope :current,-> { where(aasm_state: 'started')}
 
     before_validation :set_defaults, on: :create
+    before_save :reset, if: "aasm_state_changed? and aasm_state_change.first == 'started' and
+                             aasm_state_change.last == 'released'"
 
     # Class methods
     def self.schedule(user)
       SubCategory.ready.each do |sub_cat|
         scheduled_date = calculate_scheduled_date(sub_cat.starts_on_key, sub_cat.starts_on_val)
         if scheduled_date.present?
-          conversation = user.conversations.find_or_create_by({sub_category: sub_cat})
-          state = sub_cat.approval_require ? 'scheduled' : 'released'
-          conversation.update_attributes({scheduled_at: scheduled_date,
-                                          aasm_state: state})
+          assign(user, sub_cat, scheduled_date)
         end
       end
+    end
+
+    def self.assign(user, sub_category, scheduled_date)
+      conversation = user.conversations.find_or_create_by({sub_category: sub_category})
+      state = sub_category.approval_require ? 'scheduled' : 'released'
+      conversation.update_attributes({scheduled_at: scheduled_date,
+                                      aasm_state: state})
     end
 
     def self.calculate_scheduled_date(starts_on_key, value)
@@ -99,6 +102,7 @@ module ChatBot
         if opt_interval.present?
           ## Move this to a method and use it as a aasm call back on reschedule
           conv.reschedule!
+          conv.reload
           interval = opt_interval.match(/DAY:(\d+)/)[1].to_i
           conv.scheduled_at = Date.current + interval.days
           conv.dialog = opt_decision ? opt_decision : conv.sub_category.initial_dialog
@@ -111,8 +115,13 @@ module ChatBot
       end
 
       conv.save
-      {conv_id: conv.id,
-       dialog_data: conv.dialog.data_attributes}
+      if !conv.started?
+        {conv_id: conv.id,
+         finished: true}
+      else
+        {conv_id: conv.id,
+         dialog_data: conv.dialog.data_attributes}
+      end
     end
 
     # Object methods
@@ -133,9 +142,13 @@ module ChatBot
       self.dialog = sub_category.try(:initial_dialog)
     end
 
-    def reschedule
-      # TODO
-      self.aasm_state = 'released'
+    def reset
+      self.finish! if viewed_count >= sub_category.repeat_limit
+      sub_categories = SubCategory.where(starts_on_key: SubCategory::AFTER_DIALOG,
+                                        starts_on_val: dialog.code)
+      sub_categories.each do |sub_cat|
+        Conversation.assign(created_for, sub_cat, Date.current)
+      end
     end
 
   end
