@@ -97,7 +97,6 @@ module ChatBot
         opt_decision = option.decision
 
         if opt_interval.present?
-
           ## Move this to a method and use it as a aasm call back on reschedule
           conv.reschedule!
           interval = opt_interval.match(/DAY:(\d+)/)[1].to_i

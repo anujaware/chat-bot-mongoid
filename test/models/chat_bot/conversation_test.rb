@@ -187,14 +187,13 @@ module ChatBot
                                         is_ready_to_schedule: true})
 
           @d1 = @sub_cat_1.initial_dialog
-          @d2 = Dialog.create message: Faker::Lorem.sentence, sub_category: @sub_cat_1
+          @d2 = Dialog.create message: Faker::Lorem.sentence, sub_category: @sub_cat_1,
+                options: {'0' => {name: Faker::Lorem.word, interval: 'DAY:5'}}
           @sub_cat_1.dialogs << @d2
-          @sub_cat_1.save
 
-          @d2.options = [Option.create({name: Faker::Lorem.word, interval: 'DAY:5'})]
-          o = Option.create({name: Faker::Lorem.word, decision_id: @d2.id, dialog_id: @d1.id})
+          option = Option.create({name: Faker::Lorem.word, decision_id: @d2.id, dialog_id: @d1.id})
 
-          @d1.options = [o]
+          @d1.options = [option]
 
           class User
             include Mongoid::Document
@@ -235,13 +234,28 @@ module ChatBot
           assert_equal @conv_1.dialog, @d1
           assert @conv_1.released?
         end
-=begin
-        it 'next time conversation should start from 2nd dialog'
-        # Create a conversation with three dialogs -> T1, T2, T3
-        # Last dialog with option inverval set to DAY:3 and decision set to T2
-        # Go through the conversation
-        # Check -> Scheduled date should set, dialog set to T2, should be in released state
 
+        it 'next time conversation should start from 2nd dialog' do
+          @d3 = Dialog.create message: Faker::Lorem.sentence, sub_category: @sub_cat_1,
+            options: {'0' => {name: Faker::Lorem.word, interval: 'DAY:3', decision_id: @d2.id}}
+          assert_equal @d3.reload.options.count, 1
+
+          assert_equal @d2.reload.options.count, 1
+
+          option = @d2.options.first
+
+          @sub_cat_1.dialogs << @d3
+          assert option.update_attributes({decision_id: @d3.id, interval: nil})
+
+          option = @d3.options.first
+          response = Conversation.fetch(@user, option.id)
+          @conv_1.reload
+          assert_equal @conv_1.scheduled_at, Date.current + 3.days
+          assert_equal @conv_1.dialog, @d2
+          assert @conv_1.released?
+        end
+
+=begin
         it 'do not reschedule if crossed repeat limit'
         # Create conversation metadata i.e.sub category with repeat limit 3
         # Create two dialogs last one having interval DAY:3
