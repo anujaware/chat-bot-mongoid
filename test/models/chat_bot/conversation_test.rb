@@ -170,9 +170,6 @@ module ChatBot
       it 'increased viewed count at some point'
 
       describe 'After finish i.e. state changed to "finished"' do
-        it 'should "finished" if decision is empty and interval is also empty' do
-        end
-
 
         before do
           @sub_cat_1, @sub_cat_2, @sub_cat_3 = 3.times.collect do |num|
@@ -180,7 +177,8 @@ module ChatBot
           end
 
           @sub_cat_1.update_attributes({priority: 3, starts_on_key: SubCategory::AFTER_DAYS,
-                                        starts_on_val: 2, is_ready_to_schedule: true})
+                                        starts_on_val: 2, is_ready_to_schedule: true,
+                                        repeat_limit: 3})
           @sub_cat_2.update_attributes({priority: 3, starts_on_key: SubCategory::AFTER_DAYS,
                                         starts_on_val: 3, is_ready_to_schedule: true})
           @sub_cat_3.update_attributes({priority: 3, starts_on_key: SubCategory::IMMEDIATE,
@@ -220,12 +218,21 @@ module ChatBot
           assert_equal @conv_1.reload.dialog, @d2
         end
 
+        it 'should "finished" if decision is empty and interval is also empty' do
+          option = @d2.options.first
+          assert option.update_attribute(:interval, nil)
+          response = Conversation.fetch(@user, option.id)
+          @conv_1.finished?
+        end
+
         it 'reschedule after 5 days as interval is DAY:5' do
           option = @d2.options.first
           response = Conversation.fetch(@user, option.id)
 
           ## Here in response either it should return nil or dialog of
           #  next conversations as current conversation has been finished
+          # and flag conversation finished
+
           #assert_equal response, {conv_id: @conv_1.id,
           #                        dialog_data: @d2.reload.data_attributes}
 
@@ -240,11 +247,9 @@ module ChatBot
             options: {'0' => {name: Faker::Lorem.word, interval: 'DAY:3', decision_id: @d2.id}}
           assert_equal @d3.reload.options.count, 1
 
-          assert_equal @d2.reload.options.count, 1
+          @sub_cat_1.dialogs << @d3
 
           option = @d2.options.first
-
-          @sub_cat_1.dialogs << @d3
           assert option.update_attributes({decision_id: @d3.id, interval: nil})
 
           option = @d3.options.first
@@ -255,25 +260,37 @@ module ChatBot
           assert @conv_1.released?
         end
 
-=begin
-        it 'do not reschedule if crossed repeat limit'
-        # Create conversation metadata i.e.sub category with repeat limit 3
-        # Create two dialogs last one having interval DAY:3
-        # Create conversation object and set its viewed count to 3
-        # Go through conversation
-        # Check after finish -> State changed to 'finished'
+        it 'do not reschedule if crossed repeat limit' do
+          assert @conv_1.update_attribute(:viewed_count, 3)
+          option = @d2.options.first
+          assert option.interval.present?
 
-        it 'create dependant i.e. after_dialog coversation if not created'
-        # Create a two metadata conversation
-        #   1. Create a conversation with two dialogs -> T1, T2
-        #   2. T2 -> interval DAY:3
-        #   3. Create another sub category with starts on = after_dialog T2
-        # Check only one conversation should exists for a user
-        # Go though first conversation
-        # After finish first conversation
-        # Check -> another conversation has been created
+          Conversation.fetch(@user, option.id)
+
+          @conv_1.reload
+          assert @conv_1.finished?
+        end
+
+        it 'create dependant i.e. after_dialog coversation if not created' do
+          @sub_cat = create_dialog
+          @sub_cat.update_attributes(starts_on_key: SubCategory::AFTER_DIALOG, starts_on_val: @d2.code)
+
+          conv_count = @user.conversations.count
+          assert !@user.conversations.where(sub_category: @sub_cat).present?
+
+          option = @d2.options.first
+          response = Conversation.fetch(@user, option.id)
+          @conv_1.reload
+          assert_equal @conv_1.scheduled_at, Date.current + 5.days
+          assert_equal @conv_1.dialog, @d1
+          assert @conv_1.released?
+
+          assert_equal @user.reload.conversations.count, conv_count + 1
+          assert @user.conversations.where(sub_category: @sub_cat).present?
+        end
       end
 
+=begin
       describe 'fetch next conversation with the crieteria' do
         # Create three conversations with different priority
         # state released, scheduled date less than or equal to today
@@ -298,5 +315,4 @@ module ChatBot
 =end
     end
   end
-end
 end
