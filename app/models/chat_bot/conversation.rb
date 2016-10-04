@@ -107,11 +107,13 @@ module ChatBot
           conv.scheduled_at = Date.current + interval.days
           conv.dialog = opt_decision ? opt_decision : conv.sub_category.initial_dialog
         else
-          conv.dialog = opt_decision
+          opt_decision.present? ? (conv.dialog = opt_decision) : conv.finish!
         end
       else
-        conv = created_for.conversations.first
-        conv.start!
+        conv = next_conversation(created_for)
+        ### Query: Should it be start here or start when user select an option
+        ### As user selects an option means user has read the dialog
+        conv.start! if !conv.started?
       end
 
       conv.save
@@ -124,6 +126,14 @@ module ChatBot
       end
     end
 
+    def self.next_conversation(created_for)
+      started_conv = created_for.conversations.current.first
+      return started_conv if started_conv
+
+      cons = created_for.conversations.order_by(priority: 'asc')
+      cons.first
+    end
+
     # Object methods
     def increase_viewed_count
       self.viewed_count += 1
@@ -132,9 +142,9 @@ module ChatBot
 
     def set_defaults
       restart
-      #self.priority = sub_category.priority
       # TODO: Not working. self.save goes in inifinite loop
       #self.initial_dialog = sub_category.initial_dialog
+      self.priority = sub_category.try(:priority)
       self.schedule! if sub_category.try(:approval_require)
     end
 
