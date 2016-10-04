@@ -58,10 +58,9 @@ module ChatBot
             end
 
             it 'should set priority' do
+              @sub_category.update_attribute(:priority, 6)
               @conv_1 = Conversation.create(sub_category: @sub_category,
-                                            created_for: @user,
-                                            priority: 6)
-              assert @conv_1.save
+                                            created_for: @user)
               assert_equal @conv_1.priority, 6
             end
           end
@@ -176,12 +175,11 @@ module ChatBot
             create_dialog
           end
 
-          @sub_cat_1.update_attributes({priority: 3, starts_on_key: SubCategory::AFTER_DAYS,
-                                        starts_on_val: 2, is_ready_to_schedule: true,
-                                        repeat_limit: 3})
+          @sub_cat_1.update_attributes({priority: 2, starts_on_key: SubCategory::AFTER_DAYS,
+                                        starts_on_val: 2, is_ready_to_schedule: true, repeat_limit: 3})
           @sub_cat_2.update_attributes({priority: 3, starts_on_key: SubCategory::AFTER_DAYS,
                                         starts_on_val: 3, is_ready_to_schedule: true})
-          @sub_cat_3.update_attributes({priority: 3, starts_on_key: SubCategory::IMMEDIATE,
+          @sub_cat_3.update_attributes({priority: 4, starts_on_key: SubCategory::IMMEDIATE,
                                         is_ready_to_schedule: true})
 
           @d1 = @sub_cat_1.initial_dialog
@@ -199,13 +197,13 @@ module ChatBot
             has_many :conversations, class_name: 'ChatBot::Conversation', as: :created_for
           end
           @user = User.create()
-
           Conversation.schedule(@user)
-
           assert_equal @user.conversations.count, 3
 
           response = Conversation.fetch(@user)
           @conv_1 = @user.conversations.find_by(sub_category: @sub_cat_1)
+          assert_equal @conv_1.priority, 2
+
           assert_equal response, {conv_id: @conv_1.id,
                                   dialog_data: @d1.reload.data_attributes}
           assert @conv_1.started?
@@ -290,20 +288,75 @@ module ChatBot
         end
       end
 
-=begin
-      describe 'fetch next conversation with the crieteria' do
-        # Create three conversations with different priority
+      describe 'fetch next conversation' do
+        before do
+          @sub_cat_1, @sub_cat_2, @sub_cat_3 = 3.times.collect do |num|
+            create_dialog
+          end
+
+          assert @sub_cat_1.update_attributes({priority: 6, is_ready_to_schedule: true, repeat_limit: 3})
+          assert @sub_cat_2.update_attributes({priority: 5, is_ready_to_schedule: true})
+          assert @sub_cat_3.update_attributes({priority: 4, is_ready_to_schedule: true})
+          class User
+            include Mongoid::Document
+
+            has_many :conversations, class_name: 'ChatBot::Conversation', as: :created_for
+          end
+          @user = User.create()
+          Conversation.schedule(@user)
+          assert_equal @user.conversations.count, 3
+
+          @conv_1 = @user.conversations.find_by(sub_category: @sub_cat_1)
+          @conv_2 = @user.conversations.find_by(sub_category: @sub_cat_2)
+          @conv_3 = @user.conversations.find_by(sub_category: @sub_cat_3)
+        end
         # state released, scheduled date less than or equal to today
-        context 'positive' do
-          it 'should return started conversations'
-          # Call next fetch next conversation multiple times which should always return higher priority conversation
-          it 'released'
+        context 'should return' do
+          it 'started conversations' do
+            @conv_1.update_attributes(scheduled_at: Date.current - 1.day)
+            @conv_2.update_attributes(scheduled_at: Date.current - 1.day)
+            @conv_3.update_attributes(scheduled_at: Date.current - 1.day)
+            assert @conv_3.start!
+            assert @conv_1.released?
+            assert @conv_2.released?
+
+            response = Conversation.fetch(@user)
+            d1 = @sub_cat_3.initial_dialog
+            assert_equal response, {conv_id: @conv_3.id,
+                                    dialog_data: d1.reload.data_attributes}
+          end
+
+          it 'released conversation with higher priority' do
+            assert_equal @sub_cat_1.priority, 6
+            assert_equal @sub_cat_2.priority, 5
+            assert_equal @sub_cat_3.priority, 4
+
+            assert @conv_3.released?
+            assert @conv_1.released?
+            assert @conv_2.released?
+
+            assert @conv_3.update_attribute(:priority, 3)
+
+            response = Conversation.fetch(@user)
+            d1 = @sub_cat_3.initial_dialog
+            assert_equal response, {conv_id: @conv_3.id,
+                                    dialog_data: d1.reload.data_attributes}
+
+            assert @conv_3.reload.update_attribute(:aasm_state, 'released')
+            assert @conv_2.update_attribute(:priority, 2)
+
+            response_2 = Conversation.fetch(@user)
+            d1 = @sub_cat_2.initial_dialog
+            assert_equal response_2, {conv_id: @conv_2.id,
+                                    dialog_data: d1.reload.data_attributes}
+          end
+
           # mark one of them higher priority conversation as not released
           # fetch conversation should skip scheduled conversation
           it 'scheduled at less than or equal to today'
           # Set schedule date to future date to two conversation with higher priority
           # Fetch conv should return
-          it 'sort by priority'
+          it 'with higher priority i.e. less in number'
           it 'sort by scheduled date'
           it 'sort by viewed count'
         end
@@ -312,7 +365,6 @@ module ChatBot
           it 'not return released conversation with date greater than today'
         end
       end
-=end
     end
   end
 end
