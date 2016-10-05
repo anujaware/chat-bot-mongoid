@@ -210,12 +210,10 @@ module ChatBot
                                   dialog_data: @d1.reload.data_attributes}
           assert @conv_1.reload.started?
 
-          selected_option = @d1.options.last
-          assert_equal selected_option.decision, @d2
+          @selected_option = @d1.options.last
+          assert_equal @selected_option.decision, @d2
 
-          response = Conversation.fetch(@user, selected_option.id)
-          assert_equal @conv_1.reload.option, selected_option
-          assert_equal @conv_1.reload.dialog, @d2
+          response = Conversation.fetch(@user, @selected_option.id)
         end
 
         it 'should "finished" if decision is empty and interval is also empty' do
@@ -223,6 +221,17 @@ module ChatBot
           assert option.update_attribute(:interval, nil)
           response = Conversation.fetch(@user, option.id)
           @conv_1.finished?
+        end
+
+        it 'should save next dialog' do
+          assert_equal @conv_1.reload.dialog, @d2
+        end
+
+        it 'should save selected option' do
+          assert_equal @conv_1.reload.option, @selected_option
+          option = @d2.options.first
+          response = Conversation.fetch(@user, option.id)
+          assert_equal @conv_1.reload.option, option
         end
 
         it 'increased viewed count' do
