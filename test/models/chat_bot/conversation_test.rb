@@ -166,8 +166,6 @@ module ChatBot
         end
       end
 
-      it 'increased viewed count at some point'
-
       describe 'After finish i.e. state changed to "finished"' do
 
         before do
@@ -202,6 +200,7 @@ module ChatBot
 
           @conv_1 = @user.conversations.find_by(sub_category: @sub_cat_1)
           assert @conv_1.update_attributes(scheduled_at: Date.current - 1.day)
+          assert_equal @conv_1.viewed_count, 0
 
           response = Conversation.fetch(@user)
 
@@ -224,6 +223,10 @@ module ChatBot
           assert option.update_attribute(:interval, nil)
           response = Conversation.fetch(@user, option.id)
           @conv_1.finished?
+        end
+
+        it 'increased viewed count' do
+          assert_equal @conv_1.viewed_count, 1
         end
 
         it 'reschedule after 5 days as interval is DAY:5' do
@@ -313,7 +316,7 @@ module ChatBot
           @conv_2 = @user.conversations.find_by(sub_category: @sub_cat_2)
           @conv_3 = @user.conversations.find_by(sub_category: @sub_cat_3)
         end
-        # state released, scheduled date less than or equal to today
+
         context 'should return' do
           it 'started conversations' do
             assert @conv_1.update_attributes(scheduled_at: Date.current - 1.day)
@@ -354,8 +357,6 @@ module ChatBot
                                     dialog_data: d1.reload.data_attributes}
           end
 
-          # mark one of them higher priority conversation as not released
-          # fetch conversation should skip scheduled conversation
           it 'released conversation' do
             assert_equal @sub_cat_1.priority, 6
             assert_equal @sub_cat_2.priority, 5
@@ -376,13 +377,13 @@ module ChatBot
             assert @conv_1.released?
             assert @conv_2.released?
 
-            assert @conv_1.update_attributes(scheduled_at: Date.current, priority: 4)
-            assert @conv_2.update_attributes(scheduled_at: Date.current - 2.day, priority: 4)
-            assert @conv_3.update_attributes(scheduled_at: Date.current - 1.day, priority: 4)
+            assert @conv_1.update_attributes(scheduled_at: Date.current, priority: 4, viewed_count: 4)
+            assert @conv_2.update_attributes(scheduled_at: Date.current - 2.day, priority: 4, viewed_count: 5)
+            assert @conv_3.update_attributes(scheduled_at: Date.current - 1.day, priority: 4, viewed_count: 3)
 
-            response_2 = Conversation.fetch(@user)
-            d1 = @sub_cat_2.initial_dialog
-            assert_equal response_2, {conv_id: @conv_2.id,
+            response = Conversation.fetch(@user)
+            d1 = @sub_cat_3.initial_dialog
+            assert_equal response, {conv_id: @conv_3.id,
                                       dialog_data: d1.reload.data_attributes}
           end
 
@@ -401,7 +402,34 @@ module ChatBot
                                       dialog_data: d1.reload.data_attributes}
           end
 
-          it 'viewed count' do
+          it 'conversation whose viewed count is less' do
+            assert @conv_3.released?
+            assert @conv_1.released?
+            assert @conv_2.released?
+
+            assert @conv_1.update_attributes(scheduled_at: Date.current, priority: 5, viewed_count: 7)
+            assert @conv_3.released?
+            assert @conv_1.released?
+            assert @conv_2.released?
+
+            assert @conv_1.update_attributes(scheduled_at: Date.current, priority: 3, viewed_count: 7)
+            assert @conv_2.update_attributes(scheduled_at: Date.current - 2.day, priority: 4, viewed_count: 4)
+            assert @conv_3.update_attributes(scheduled_at: Date.current - 1.day, priority: 4, viewed_count: 4)
+
+            response_2 = Conversation.fetch(@user)
+            d1 = @sub_cat_1.initial_dialog
+            assert_equal response_2, {conv_id: @conv_1.id,
+                                      dialog_data: d1.reload.data_attributes}
+            assert @conv_2.update_attributes(scheduled_at: Date.current - 2.day, priority: 4, viewed_count: 4)
+            assert @conv_3.update_attributes(scheduled_at: Date.current - 1.day, priority: 4, viewed_count: 4)
+
+            response_2 = Conversation.fetch(@user)
+            d1 = @sub_cat_1.initial_dialog
+            assert_equal response_2, {conv_id: @conv_1.id,
+                                      dialog_data: d1.reload.data_attributes}
+          end
+
+          it 'conversation whose viewed count is more but has higher priority' do
             assert @conv_3.released?
             assert @conv_1.released?
             assert @conv_2.released?
