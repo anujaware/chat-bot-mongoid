@@ -166,7 +166,7 @@ module ChatBot
         end
       end
 
-      describe 'After finish i.e. state changed to "finished"' do
+      describe 'After completing a conversations it should' do
 
         before do
           @sub_cat_1, @sub_cat_2, @sub_cat_3 = 3.times.collect do |num|
@@ -216,18 +216,18 @@ module ChatBot
           response = Conversation.fetch(@user, @selected_option.id)
         end
 
-        it 'should "finished" if decision is empty and interval is also empty' do
+        it '"finished" if decision is empty and interval is also empty' do
           option = @d2.options.first
           assert option.update_attribute(:interval, nil)
           response = Conversation.fetch(@user, option.id)
           @conv_1.finished?
         end
 
-        it 'should save next dialog' do
+        it 'save next dialog' do
           assert_equal @conv_1.reload.dialog, @d2
         end
 
-        it 'should save selected option' do
+        it 'save selected option' do
           assert_equal @conv_1.reload.option, @selected_option
           option = @d2.options.first
           response = Conversation.fetch(@user, option.id)
@@ -273,7 +273,7 @@ module ChatBot
           assert @conv_1.released?
         end
 
-        it 'do not reschedule if crossed repeat limit' do
+        it 'not reschedule if crossed repeat limit' do
           assert @conv_1.update_attribute(:viewed_count, 3)
           option = @d2.options.first
           assert option.interval.present?
@@ -286,7 +286,8 @@ module ChatBot
 
         it 'create dependant i.e. after_dialog coversation if not created' do
           @sub_cat = create_dialog
-          @sub_cat.update_attributes(starts_on_key: SubCategory::AFTER_DIALOG, starts_on_val: @d2.code)
+          @sub_cat.update_attributes(starts_on_key: SubCategory::AFTER_DIALOG, starts_on_val: @d2.code,
+                                    is_ready_to_schedule: true)
 
           conv_count = @user.conversations.count
           assert !@user.conversations.where(sub_category: @sub_cat).present?
@@ -300,6 +301,22 @@ module ChatBot
 
           assert_equal @user.reload.conversations.count, conv_count + 1
           assert @user.conversations.where(sub_category: @sub_cat).present?
+        end
+
+        it 'do not create dependant if its not ready to schedule' do
+          @sub_cat = create_dialog
+          @sub_cat.update_attributes(starts_on_key: SubCategory::AFTER_DIALOG,
+                                     starts_on_val: @d2.code)
+
+          conv_count = @user.conversations.count
+          assert !@user.conversations.where(sub_category: @sub_cat).present?
+
+          option = @d2.options.first
+          response = Conversation.fetch(@user, option.id)
+          @conv_1.reload
+
+          assert_equal @user.reload.conversations.count, conv_count
+          assert !@user.conversations.where(sub_category: @sub_cat).present?
         end
       end
 
