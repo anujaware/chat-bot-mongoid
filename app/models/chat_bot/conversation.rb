@@ -5,6 +5,9 @@ module ChatBot
     include AASM
 
     include Mongoid::History::Trackable
+
+    BYE = 'See you later!'
+
     track_history :on => [:fields],
                   :modifier_field => :modifier
 
@@ -53,6 +56,8 @@ module ChatBot
 
     # There is atmost one started conversation can be exists for an object
     scope :current,-> { where(aasm_state: 'started')}
+    scope :released,-> { where(aasm_state: 'released',
+                               :scheduled_at.lte => Date.current.end_of_day)}
 
     before_validation :set_defaults, on: :create
     before_save :reset, if: "aasm_state_changed? and aasm_state_change.first == 'started' and
@@ -111,6 +116,10 @@ module ChatBot
         end
       else
         conv = next_conversation(created_for)
+        return {conv_id: nil,
+                message: BYE
+        } if conv.nil?
+
         ### Query: Should it be start here or start when user select an option
         ### As user selects an option means user has read the dialog
         conv.start! if !conv.started?
@@ -130,7 +139,7 @@ module ChatBot
       started_conv = created_for.conversations.current.first
       return started_conv if started_conv
 
-      cons = created_for.conversations.order_by(priority: 'asc')
+      cons = created_for.conversations.released.order_by(priority: 'asc', scheduled_at: 'asc')
       cons.first
     end
 
@@ -143,7 +152,7 @@ module ChatBot
     def set_defaults
       restart
       # TODO: Not working. self.save goes in inifinite loop
-      #self.initial_dialog = sub_category.initial_dialog
+      # self.initial_dialog = sub_category.initial_dialog
       self.priority = sub_category.try(:priority)
       self.schedule! if sub_category.try(:approval_require)
     end
@@ -155,7 +164,7 @@ module ChatBot
     def reset
       self.finish! if viewed_count >= sub_category.repeat_limit
       sub_categories = SubCategory.where(starts_on_key: SubCategory::AFTER_DIALOG,
-                                        starts_on_val: dialog.code)
+                                         starts_on_val: dialog.code)
       sub_categories.each do |sub_cat|
         Conversation.assign(created_for, sub_cat, Date.current)
       end
