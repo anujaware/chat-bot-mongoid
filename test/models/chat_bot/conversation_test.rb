@@ -200,13 +200,16 @@ module ChatBot
           Conversation.schedule(@user)
           assert_equal @user.conversations.count, 3
 
-          response = Conversation.fetch(@user)
           @conv_1 = @user.conversations.find_by(sub_category: @sub_cat_1)
+          assert @conv_1.update_attributes(scheduled_at: Date.current - 1.day)
+
+          response = Conversation.fetch(@user)
+
           assert_equal @conv_1.priority, 2
 
           assert_equal response, {conv_id: @conv_1.id,
                                   dialog_data: @d1.reload.data_attributes}
-          assert @conv_1.started?
+          assert @conv_1.reload.started?
 
           selected_option = @d1.options.last
           assert_equal selected_option.decision, @d2
@@ -313,9 +316,9 @@ module ChatBot
         # state released, scheduled date less than or equal to today
         context 'should return' do
           it 'started conversations' do
-            @conv_1.update_attributes(scheduled_at: Date.current - 1.day)
-            @conv_2.update_attributes(scheduled_at: Date.current - 1.day)
-            @conv_3.update_attributes(scheduled_at: Date.current - 1.day)
+            assert @conv_1.update_attributes(scheduled_at: Date.current - 1.day)
+            assert @conv_2.update_attributes(scheduled_at: Date.current - 1.day)
+            assert @conv_3.update_attributes(scheduled_at: Date.current - 1.day, priority: 1)
             assert @conv_3.start!
             assert @conv_1.released?
             assert @conv_2.released?
@@ -353,16 +356,79 @@ module ChatBot
 
           # mark one of them higher priority conversation as not released
           # fetch conversation should skip scheduled conversation
-          it 'scheduled at less than or equal to today'
-          # Set schedule date to future date to two conversation with higher priority
-          # Fetch conv should return
-          it 'with higher priority i.e. less in number'
-          it 'sort by scheduled date'
-          it 'sort by viewed count'
-        end
-        context 'negative' do
-          it 'should return return started conversations even if released conversation exists with high priority'
-          it 'not return released conversation with date greater than today'
+          it 'released conversation' do
+            assert_equal @sub_cat_1.priority, 6
+            assert_equal @sub_cat_2.priority, 5
+            assert_equal @sub_cat_3.priority, 4
+
+            assert @conv_3.schedule!
+            assert @conv_1.released?
+            assert @conv_2.released?
+
+            response_2 = Conversation.fetch(@user)
+            d1 = @sub_cat_2.initial_dialog
+            assert_equal response_2, {conv_id: @conv_2.id,
+                                    dialog_data: d1.reload.data_attributes}
+          end
+
+          it 'which is scheduled earlier if have same or higher priority' do
+            assert @conv_3.released?
+            assert @conv_1.released?
+            assert @conv_2.released?
+
+            assert @conv_1.update_attributes(scheduled_at: Date.current, priority: 4)
+            assert @conv_2.update_attributes(scheduled_at: Date.current - 2.day, priority: 4)
+            assert @conv_3.update_attributes(scheduled_at: Date.current - 1.day, priority: 4)
+
+            response_2 = Conversation.fetch(@user)
+            d1 = @sub_cat_2.initial_dialog
+            assert_equal response_2, {conv_id: @conv_2.id,
+                                      dialog_data: d1.reload.data_attributes}
+          end
+
+          it 'which is scheduled latest if have higher priority than earlier one' do
+            assert @conv_3.released?
+            assert @conv_1.released?
+            assert @conv_2.released?
+
+            assert @conv_1.update_attributes(scheduled_at: Date.current, priority: 3)
+            assert @conv_2.update_attributes(scheduled_at: Date.current - 2.day, priority: 4)
+            assert @conv_3.update_attributes(scheduled_at: Date.current - 1.day, priority: 4)
+
+            response_2 = Conversation.fetch(@user)
+            d1 = @sub_cat_1.initial_dialog
+            assert_equal response_2, {conv_id: @conv_1.id,
+                                      dialog_data: d1.reload.data_attributes}
+          end
+
+          it 'viewed count' do
+            assert @conv_3.released?
+            assert @conv_1.released?
+            assert @conv_2.released?
+
+            assert @conv_1.update_attributes(scheduled_at: Date.current, priority: 3, viewed_count: 7)
+            assert @conv_2.update_attributes(scheduled_at: Date.current - 2.day, priority: 4, viewed_count: 4)
+            assert @conv_3.update_attributes(scheduled_at: Date.current - 1.day, priority: 4, viewed_count: 4)
+
+            response_2 = Conversation.fetch(@user)
+            d1 = @sub_cat_1.initial_dialog
+            assert_equal response_2, {conv_id: @conv_1.id,
+                                      dialog_data: d1.reload.data_attributes}
+          end
+
+          it 'not return released conversation with date greater than today' do
+            assert @conv_3.released?
+            assert @conv_1.released?
+            assert @conv_2.released?
+
+            assert @conv_1.update_attributes(scheduled_at: Date.current + 1.day)
+            assert @conv_2.update_attributes(scheduled_at: Date.current + 2.day)
+            assert @conv_3.update_attributes(scheduled_at: Date.current + 1.day)
+
+            response_2 = Conversation.fetch(@user)
+            assert_equal response_2, {conv_id: nil,
+                                      message: Conversation::BYE}
+          end
         end
       end
     end
