@@ -139,7 +139,9 @@ module ChatBot
       started_conv = created_for.conversations.current.first
       return started_conv if started_conv
 
-      cons = created_for.conversations.released.order_by(priority: 'asc', scheduled_at: 'asc')
+      cons = created_for.conversations.released.
+                        order_by(priority: 'asc', viewed_count: 'asc', scheduled_at: 'asc')
+
       cons.first
     end
 
@@ -169,6 +171,5 @@ module ChatBot
         Conversation.assign(created_for, sub_cat, Date.current)
       end
     end
-
   end
 end
