@@ -8,4 +8,4 @@ This is a rails engine to plug a chat bot in the application where you can:
   3. Deliver the conversation
 
 Please see wiki page for the detailed usage:
-  https://github.com/anujaware/chat-bot-mongoid/wiki
+  [Chat Bot Wiki](https://github.com/anujaware/chat-bot-mongoid/wiki)
