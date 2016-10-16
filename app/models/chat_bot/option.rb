@@ -20,4 +20,8 @@ module ChatBot
       option.dialog.sub_category.dialog_ids }}, allow_blank: true
     validates :interval, format: { with: /\ADAY:(\d+)\z/i }, allow_blank: true
   end
+
+  def self.deprecate!
+    update_all(deprecated: true)
+  end
 end

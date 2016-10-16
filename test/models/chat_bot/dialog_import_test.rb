@@ -12,14 +12,6 @@ module ChatBot
      4. Category should have subcateogires
      5. Sub category should have X number of dialogs -> Name should match 
      6. Test each dialog for all the information
-     7. Create few dialogs which covers all possibilities
-       i. code
-       ii. message
-       iii. user input type = ch/cnt/slt/mlt/ddw/date/attach
-           should throw error if exits wrong format
-       iv. messsage type = txt/utube/vimeo/link/img
-       v. options
-       vi. sub category
 =end
     describe 'import dialog CSV' do
       before do
@@ -62,17 +54,71 @@ module ChatBot
         assert_equal dialog.sub_category, sub_category
       end
 
+=begin
+     7. Create few dialogs which covers all possibilities
+       i. code
+       ii. message
+       iii. user input type = ch/cnt/slt/mlt/ddw/date/attach
+           should throw error if exits wrong format
+       iv. messsage type = txt/utube/vimeo/link/img
+       v. options
+       vi. sub category
+=end
       ## CREATE A SET OF DIALOGS IN EXCEL SHEET and Match each and everything
+      context 'user_input_type of' do
+        it 'T1 should be "ch"'
+        it 'T2 should be "cnt"'
+        it 'T3 should be "slt"'
+        it 'T4 should be "mlt"'
+        it 'T5 should be "ddw"'
+        it 'T6 should be "date"'
+        it 'T7 should be "attach"'
+      end
+
+      context 'message_type of' do
+        it 'T2 should be "txt"'
+        it 'T3 should be "utube"'
+        it 'T4 should be "vimeo"'
+        it 'T5 should be "link"'
+        it 'T6 should be "img"'
+      end
+
       context 'dialog T1 should have 3 options having' do
-        it 'name = "Ok"'
-        it 'name = "Yes"'
-        it 'name = "No"'
+        context 'one option with' do
+          it 'name "Ok"'
+          it 'interval "DAY:3"'
+          it 'decision T2'
+        end
+        context 'second option with' do
+          it 'name "Yes"'
+          it 'interval "DAY:1"'
+          it 'decision T2'
+        end
+        context 'third option with' do
+          it 'name "No"'
+          it "interval ''(empty/nil)"
+          it 'decision T3'
+        end
+      end
+
+      context 'dialog T2 should have 2 options having' do
+        context 'one option with' do
+          it 'name "Yes"'
+          it 'interval "DAY:1"'
+          it 'decision T2'
+        end
+        context 'second option with' do
+          it 'name "No"'
+          it "interval ''(empty/nil)"
+          it 'decision T3'
+        end
       end
     end
-    
+
     ## Negative specs
     it 'should fail if dialog code is 12'
     it 'multiple dialogs with same code shoule not exists'
+    it "should throw error if doesn't matches format"
 
   end
 end

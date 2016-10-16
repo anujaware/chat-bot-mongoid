@@ -1,4 +1,5 @@
 module ChatBot
+  #require 'conversation_validation'
   class Conversation
     include Mongoid::Document
     include Mongoid::Timestamps
