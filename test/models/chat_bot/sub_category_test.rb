@@ -21,13 +21,19 @@ module ChatBot
       assert @sub_category.save
 
       ## Uniqueness
-      sub_category = SubCategory.new category: @category, name: 'Application Intro'
+      sub_category = SubCategory.new category: @category,
+        name: 'Application Intro',
+        description: Faker::Lorem.sentence
       assert_not sub_category.save, 'Name is duplicate'
 
-      sub_category = SubCategory.new category: @category, name: 'application intro'
+      sub_category = SubCategory.new category: @category,
+        name: 'application intro',
+        description: Faker::Lorem.sentence
       assert_not sub_category.save, 'Name is duplicate (incase-sensitive)'
 
-      sub_category = SubCategory.new category: @category, name: "application  \t \n intro  \n"
+      sub_category = SubCategory.new category: @category,
+        name: "application  \t \n intro  \n",
+        description: Faker::Lorem.sentence
       assert_not sub_category.save, 'Name is duplicate (after squish)'
       
       usage_category = Category.new name: 'Application Usage'
@@ -41,6 +47,13 @@ module ChatBot
       @sub_category.name = ''
       assert_not @sub_category.save, 'Name is blank/nil'
     end
+
+    def test_capitaliez_name
+      sub_category = SubCategory.create name: 'applIcatioN inTRoductiON',
+        category: @category, description: Faker::Lorem.sentence
+      assert_equal sub_category.reload.name, 'Application Introduction'
+    end
+
 
     def test_category_validation
       @sub_category.category = nil

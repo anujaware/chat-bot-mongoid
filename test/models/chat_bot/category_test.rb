@@ -33,6 +33,11 @@ module ChatBot
       assert_equal category.name, 'Cat 1'
     end
 
+    def test_capitaliez_name
+      category = Category.create name: 'applIcatioN inTRoductiON'
+      assert_equal category.reload.name, 'Application Introduction'
+    end
+
     def test_sub_categories
       #assert_must Category, have_many(:sub_categories)
 =begin
