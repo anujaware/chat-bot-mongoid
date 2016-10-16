@@ -16,7 +16,6 @@ module ChatBot
     field :name, type: String
     field :description, type: String
     field :repeat_limit, type: Integer, default: 0
-    field :interval, type: String
     field :approval_require, type: Boolean, default: false
     field :priority, type: Integer, default: 1
     field :starts_on_key, type: String, default: :immediate
@@ -58,7 +57,11 @@ module ChatBot
     def squish_name
       # Squish doesn't work if name contains new line character in single quote while testing
       # TODO: Fix using gsub if issue occur in application
-      self.name.squish!
+      ## We need both capitalize & titleiz bcz
+      ##  it does't work using only one of them in following example
+      ## "applIcatioN inTRoductiON"
+      ## "Appl Icatio N In T Roducti On"
+      self.name = name.squish.capitalize.titleize
     end
 
   end

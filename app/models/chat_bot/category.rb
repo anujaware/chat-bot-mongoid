@@ -22,7 +22,11 @@ module ChatBot
     before_validation :squish_name, if: "name.present?"
 
     def squish_name
-      self.name.squish!
+      ## We need both capitalize & titleiz bcz
+      ##  it does't work using only one of them in following example
+      ## "applIcatioN inTRoductiON"
+      ## "Appl Icatio N In T Roducti On"
+      self.name = name.squish.capitalize.titleize
     end
 
   end
