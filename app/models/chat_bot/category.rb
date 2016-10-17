@@ -22,12 +22,15 @@ module ChatBot
     before_validation :squish_name, if: "name.present?"
 
     def squish_name
-      ## We need both capitalize & titleiz bcz
-      ##  it does't work using only one of them in following example
-      ## "applIcatioN inTRoductiON"
-      ## "Appl Icatio N In T Roducti On"
-      self.name = name.squish.capitalize.titleize
+      self.name = name.squish.capitalize
     end
 
+    def self.find_or_create(cat_name)
+      cat_exist = Category.all.detect{|category|
+        category if category.name.downcase.strip.gsub(' ', '') == cat_name.downcase.strip.gsub(' ', '')
+      }
+      category = cat_exist.present? ? cat_exist : Category.create(name: cat_name.strip)
+      #category
+    end
   end
 end
