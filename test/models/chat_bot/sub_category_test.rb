@@ -3,7 +3,7 @@ require './test/test_helper'
 module ChatBot
   class SubCategoryTest < ActiveSupport::TestCase
 
-    [:name, :description, :name].each do |field|
+    [:name, :name].each do |field|
       should validate_presence_of field
     end
     should validate_numericality_of(:repeat_limit).only_integer.is_greater_than(-1)
@@ -12,34 +12,24 @@ module ChatBot
 
     def setup
       @category = Category.new name: 'Introduction'
-      @sub_category = SubCategory.new name: 'Application Intro',
-        category: @category,
-        description: Faker::Lorem.sentence
+      @sub_category = SubCategory.new name: 'Application Intro', category: @category
     end
 
     def test_validate_name
       assert @sub_category.save
 
       ## Uniqueness
-      sub_category = SubCategory.new category: @category,
-        name: 'Application Intro',
-        description: Faker::Lorem.sentence
+      sub_category = SubCategory.new category: @category, name: 'Application Intro'
       assert_not sub_category.save, 'Name is duplicate'
 
-      sub_category = SubCategory.new category: @category,
-        name: 'application intro',
-        description: Faker::Lorem.sentence
+      sub_category = SubCategory.new category: @category, name: 'application intro'
       assert_not sub_category.save, 'Name is duplicate (incase-sensitive)'
 
-      sub_category = SubCategory.new category: @category,
-        name: "application  \t \n intro  \n",
-        description: Faker::Lorem.sentence
+      sub_category = SubCategory.new category: @category, name: "application  \t \n intro  \n"
       assert_not sub_category.save, 'Name is duplicate (after squish)'
       
       usage_category = Category.new name: 'Application Usage'
-      sub_category = SubCategory.new category: usage_category,
-        name: 'Application Intro',
-        description: Faker::Lorem.sentence
+      sub_category = SubCategory.new category: usage_category, name: 'Application Intro'
       assert sub_category.save, 'Same sub category under two different categories.'
       ## Uniqueness END
 
@@ -51,7 +41,7 @@ module ChatBot
     def test_capitaliez_name
       sub_category = SubCategory.create name: 'applIcatioN inTRoductiON',
         category: @category, description: Faker::Lorem.sentence
-      assert_equal sub_category.reload.name, 'Application Introduction'
+      assert_equal sub_category.reload.name, 'Application introduction'
     end
 
 
@@ -72,14 +62,25 @@ module ChatBot
       @sub_category.repeat_limit = -12
       assert_not @sub_category.save
     end
-
-    def test_validate_description
-      @sub_category.description = ''
-      assert_not @sub_category.save
-    end
   end
 
   describe SubCategory do
+
+    context 'Method' do
+      context '#find_or_create' do
+        context 'should create single entry for' do
+          it "'Home - Registration' and 'Home-Registration' and 'Home -Registration' and 'Home - Registration ' and ' Home - Registration'" do
+            Category.destroy_all
+            SubCategory.destroy_all
+            category = Category.create name: Faker::Lorem.name
+            ['Home - Registration', 'Home-Registration', 'Home -Registration', 'Home - Registration ', ' Home - Registration'].each do |sub_cat_name|
+              sub = SubCategory.find_or_create(category, sub_cat_name)
+            end
+            assert_equal SubCategory.count, 1
+          end
+        end
+      end
+    end
 
     context 'Dialogue delivery' do
 

@@ -33,7 +33,7 @@ module ChatBot
     index({_slug: 1})
 
     validates :name, presence: true, uniqueness: { case_sensitive: false, scope: [:category] }
-    validates :category, :description, presence: true #initial_dialog
+    validates :category, presence: true #initial_dialog
     validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
     validates :priority, numericality: {only_integer: true, greater_than: 0, less_than: 11}
     validates :starts_on_key, inclusion: { in: STARTS_ON }
@@ -57,11 +57,14 @@ module ChatBot
     def squish_name
       # Squish doesn't work if name contains new line character in single quote while testing
       # TODO: Fix using gsub if issue occur in application
-      ## We need both capitalize & titleiz bcz
-      ##  it does't work using only one of them in following example
-      ## "applIcatioN inTRoductiON"
-      ## "Appl Icatio N In T Roducti On"
-      self.name = name.squish.capitalize.titleize
+      self.name = name.squish.capitalize
+    end
+
+    def self.find_or_create(category, sub_category_name)
+      cat_exist = category.sub_categories.detect{|sub_category|
+        sub_category.name.downcase.strip.gsub(' ', '') == sub_category_name.downcase.strip.gsub(' ', '')
+      }
+      sub_category = cat_exist.present? ? cat_exist : create(name: sub_category_name.strip, category: category)
     end
 
   end

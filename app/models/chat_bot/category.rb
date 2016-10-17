@@ -30,7 +30,6 @@ module ChatBot
         category if category.name.downcase.strip.gsub(' ', '') == cat_name.downcase.strip.gsub(' ', '')
       }
       category = cat_exist.present? ? cat_exist : Category.create(name: cat_name.strip)
-      #category
     end
   end
 end
