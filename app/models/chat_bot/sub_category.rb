@@ -15,7 +15,10 @@ module ChatBot
 
     field :name, type: String
     field :description, type: String
+
+    ##TODO: THIS SHOULD BE EITHER IN DIALOG/OPTION MODEL
     field :repeat_limit, type: Integer, default: 0
+
     field :approval_require, type: Boolean, default: false
     field :priority, type: Integer, default: 1
     field :starts_on_key, type: String, default: :immediate

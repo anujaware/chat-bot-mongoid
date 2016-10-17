@@ -1,0 +1,6 @@
+code,category,conversation_name,description,display_text,message_type,user_input_type,option_name,starts_on,priority,option_interval,option_repeat_limit,option_decision,approval_require
+"Format: T[N], where N: a valid positive integer",,,,,"txt (default) / utube / vimeo / link / img
+                      ( 'txt' => 'TEXT', 'utube' =>'VIDEO:YOUTUBE',
+'vimeo' => 'VIDEO:VIMEO', 'link' => 'LINK', 'img' => 'IMAGE')","ch(default) / cnt / slt / mlt / ddw / date / attach
+                       ( 'ch' => 'Choice', 'cnt' => ''Botcontinue', 'slt' => 'Single line text', 'mlt' => 'Multi line text', 'ddw' => 'Dropdown', 'date' => 'Date', 'attach' => 'Attach')",,after_dialog / after_days / immediate (default),Valid values are 1-11. Defualt 1 i.e. heigher,Conversation end if this value is present for any option,,Its empty means conversation end here.,TRUE / FALSE
+T1,Introduction,Application Introduction,,,,,,,,,,,

@@ -12,6 +12,10 @@ module ChatBot
         TestDialogImport.import('./test/fixtures/chat_bot/files/dialog_test.csv')
       end
       
+      after do
+        DatabaseCleaner.clean
+      end
+
       context 'category "Introduction" should' do
         it 'exists' do
           Category.find_by(name: 'Introduction')
