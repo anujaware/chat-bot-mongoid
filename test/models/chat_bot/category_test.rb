@@ -35,7 +35,7 @@ module ChatBot
 
     def test_capitaliez_name
       category = Category.create name: 'applIcatioN inTRoductiON'
-      assert_equal category.reload.name, 'Application Introduction'
+      assert_equal category.reload.name, 'Application introduction'
     end
 
     def test_sub_categories
@@ -46,6 +46,19 @@ ChatBot::CategoryTest#test_sub_categories:
 NoMethodError: undefined method `matches?' for ChatBot::Category:Class
     test/models/chat_bot/category_test.rb:35:in `test_sub_categories'
 =end
+    end
+
+    describe 'Method' do
+      context '#find_or_create' do
+        context 'should create single entry for' do
+          it "'Home - Registration' and 'Home-Registration' and 'Home -Registration' and 'Home - Registration ' and ' Home - Registration'" do
+            ['Home - Registration', 'Home-Registration', 'Home -Registration', 'Home - Registration ', ' Home - Registration'].each do |cat_name|
+              assert Category.find_or_create(cat_name).present?
+            end
+            assert_equal Category.count, 1
+          end
+        end
+      end
     end
   end
 end
