@@ -1,21 +1,15 @@
 require './test/test_helper'
+require './lib/chat_bot/import_dialogs'
 
 module ChatBot
-  class DialogImportTest < ActiveSupport::TestCase
-=begin
-  1. dialog code
-     1. should throw error if format doesn't match
-     2. if same code on muliple places then should
-        i. save once for unique code
-       ii. should save multiple options
-     3. Save category -> name should match
-     4. Category should have subcateogires
-     5. Sub category should have X number of dialogs -> Name should match 
-     6. Test each dialog for all the information
-=end
+  class ImportdialogsTest < ActiveSupport::TestCase
+
     describe 'import dialog CSV' do
       before do
-        ImportDialogs.import(Rails.root + 'test/fixtures/chat_bot/files/dialog_test.csv')
+        class TestDialogImport
+          include ImportDialogs
+        end
+        TestDialogImport.import('./test/fixtures/chat_bot/files/dialog_test.csv')
       end
       
       context 'category "Introduction" should' do
@@ -220,12 +214,12 @@ module ChatBot
           end
         end
       end
+
+      ## Negative specs
+      it 'should fail if dialog code is 12'
+      it 'multiple dialogs with same code shoule not exists'
+      it "should throw error if doesn't matches format"
+
     end
-
-    ## Negative specs
-    it 'should fail if dialog code is 12'
-    it 'multiple dialogs with same code shoule not exists'
-    it "should throw error if doesn't matches format"
-
   end
 end
