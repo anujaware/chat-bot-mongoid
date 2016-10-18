@@ -10,13 +10,13 @@ module ChatBot
         file = CSV.open(file_path, :row_sep => :auto, :col_sep => ",")
         rows = file.read
         header1 = rows.delete_at(0)
-        p header1
         header2 = rows.delete_at(0)
         @header = {"code" => 0, "category" => 1, "conversation_name" => 2,
-                   'description' => 3, "display_text" => 4, "message_type" => 5,
-                   "user_input_type" => 6, "option_name" => 7, "starts_on" => 8,"priority"=> 9,
-                   "option_interval" => 10, "option_repeat_limit" => 11,
-                   "option_decision" => 12, "approval_require" => 13}
+                   'description' => 3, "priority" => 4, "dialog_display_text" => 5,
+                   "dialog_message_type" => 6, "dialog_user_input_type" => 7,
+                   "option_name" => 8, "starts_on" => 9, "dialog_repeat_limit" => 10,
+                   "option_interval" => 11, "option_decision" => 12,
+                   "approval_require" => 13, "is_ready" => 14}
 
         found_mismatch = false
         @header.each do |key, value|
@@ -46,49 +46,51 @@ module ChatBot
             code = get_value('code').try(:strip)
 
             if code.present? and code.match(/^T\d*(\.\d*)?$/).present?
-              category = Category.find_or_create("#{get_value('category')}")
-              sub_category = SubCategory.find_or_create(category, "#{get_value('conversation_name')}") if category.present?
 
               @dialog= Dialog.find_or_initialize_by(code: code)
+              if current_dialog_code != code
+                category = Category.find_or_create("#{get_value('category')}")
+                sub_category = SubCategory.find_or_create(category, "#{get_value('conversation_name')}") if category.present?
+                sub_category.description = get_value('description')
+                approval = get_value('approval_require')
+                sub_category.approval_require = approval if approval.present?
+                priority = get_value('priority')
+                sub_category.priority = priority if priority.present?
+                is_ready = get_value('is_ready')
+                sub_category.is_ready_to_schedule = is_ready if is_ready.present?
 
-              deprecate_old_options if current_dialog_code != code
+                deprecate_old_options if current_dialog_code != code
 
-              @dialog.sub_category = sub_category if current_dialog_code != code
-              description = get_value('description')
-              sub_category.description = description if description
-              
-              priority = get_value('priority')
-              sub_category.priority = priority if priority
-              
-              approval = get_value('approval_require')
-              sub_category.approval_require = approval_require if approval
-
-              ##CHECK: @dialog.priority = priority.to_i if priority.present? and current_dialogue_code != code
-
-              @dialog.message = get_value('display_text')
-              @dialog.message_type = get_value('message_type')
-              @dialog.user_input_type = get_value('user_input_type')
-
-              ######@header = {"code" => 0, "category" => 1, "conversation_name" => 2,
-              ######           'description' => 3, "display_text" => 4, "message_type" => 5,
-              #           "user_input_type" => 6, "option_name" => 7, "starts_on" => 8,"priority"=> 9,
-              #           "option_interval" => 10, "option_repeat_limit" => 11,
-              #           "option_decision" => 12, "approval_require" => 13}
+                @dialog.sub_category = sub_category
+                @dialog.message = get_value('dialog_display_text')
+                message_type = get_value('dialog_message_type')
+                @dialog.message_type = message_type if message_type.present?
+                @dialog.user_input_type = get_value('dialog_user_input_type')
+                @dialog.repeat_limit = get_value('dialog_repeat_limit').to_i
+                sub_category.save
+              end
 
               #@dialog.data_type = extract_datatype
-              #@dialog.starts_on = get_starts_on if current_dialogue_code != code
-
-              ### CHECK: 
-              #####repeat_limit = get_value('option_repeat_limit').match(/(\d+)/)
-              #####@dialog.repeat_limit = repeat_limit[1] if repeat_limit.present?
-
+              #@dialog.starts_on = get_starts_on if current_dialog_code != code
 
               update_or_create_option
-              @dialogue.save
-              current_dialogue_code = code
+              @dialog.save
+              current_dialog_code = code
             end
           end
         end
+      end
+
+      def update_or_create_option
+        # If option_name is already exist
+        decision =  get_value('option_decision').match(/(T\d{1,3}(\.\d{1,3})?)/)
+        option = @dialog.options.find_or_initialize_by(name: get_value('option_name'))
+
+        #Need to set decision id to '' in case of update option
+        option.decision_id = decision.present? ? decision[1] : ''
+        option.interval = get_value('option_interval')
+        option.deprecated = false
+        option.save
       end
 
       def get_value(header_name)

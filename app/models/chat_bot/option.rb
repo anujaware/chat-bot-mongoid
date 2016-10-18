@@ -16,8 +16,8 @@ module ChatBot
 
     validates :name, presence: true#, if: Proc.new{|option| option.dialog.user_input_type != 'cnt'}
     validates :dialog, presence: true
-    validates :decision_id, inclusion: { in: Proc.new{|option|
-      option.dialog.sub_category.dialogs.collect(&:code) }}, allow_blank: true
+    #validates :decision_id, inclusion: { in: Proc.new{|option|
+    #  option.dialog.sub_category.dialogs.collect(&:code) }}, allow_blank: true#, on: :update
     validates :interval, format: { with: /\ADAY:(\d+)\z/i }, allow_blank: true
   end
 

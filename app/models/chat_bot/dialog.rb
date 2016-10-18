@@ -38,6 +38,8 @@ module ChatBot
     validates :sub_category, presence: true
     validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
 
+    validates_associated :sub_category
+
     before_validation :set_dialog_code, on: :create
     #accepts_nested_attributes_for :options
 
