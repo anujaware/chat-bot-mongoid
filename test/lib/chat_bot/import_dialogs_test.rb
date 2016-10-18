@@ -1,6 +1,5 @@
 require './test/test_helper'
 require './lib/chat_bot/import_dialogs'
-=begin
 module ChatBot
   class ImportdialogsTest < ActiveSupport::TestCase
 
@@ -21,12 +20,12 @@ module ChatBot
           Category.find_by(name: 'Introduction')
         end
 
-        it 'have sub category "App Introduction"' do
-          SubCategory.find_by(name: 'Application Introduction')
+        it 'have sub category "App introduction"' do
+          SubCategory.find_by(name: 'Application introduction')
         end
 
-        it 'have sub category "App Introduction"' do
-          SubCategory.find_by(name: 'Application Usage')
+        it 'have sub category "Application usage"' do
+          SubCategory.find_by(name: 'Application usage')
         end
       end
 
@@ -35,18 +34,18 @@ module ChatBot
           Category.find_by(name: 'Insurance')
         end
 
-        it 'have sub category "Car Insurance"' do
-          SubCategory.find_by(name: 'Car Insurance')
+        it 'have sub category "Car insurance"' do
+          SubCategory.find_by(name: 'Car insurance')
         end
       end
 
-      it 'sub category "App Introduciton" should have X no. of dialogs' do
-        sub_category = SubCategory.find_by(name: 'Application Introduction')
-        assert sub_category.dialogs.count, 5
+      it 'sub category "App introduciton" should have X no. of dialogs' do
+        sub_category = SubCategory.find_by(name: 'Application introduction')
+        assert sub_category.dialogs.count, 2
       end
 
       it 'dialog should exists of code "T1"' do
-        sub_category = SubCategory.find_by(name: 'Application Introduction')
+        sub_category = SubCategory.find_by(name: 'Application introduction')
         dialog = Dialog.find_by(code: 'T1')
         assert dialog.present?
         assert_equal dialog.sub_category, sub_category
@@ -118,21 +117,21 @@ module ChatBot
 
       context 'dialog T1 should have 3 options having' do
         context 'one option with' do
-          it 'name "Ok"' do
+          it 'name "Do it later!"' do
             dilog = Dialog.find_by(code: 'T1')
-            option = dilog.options.find_by(name: 'Ok')
+            option = dilog.options.find_by(name: 'Do it later!')
             assert option.present?
           end
 
           it 'interval "DAY:3"' do
             dilog = Dialog.find_by(code: 'T1')
-            option = dilog.options.find_by(name: 'Ok')
+            option = dilog.options.find_by(name: 'Do it later!')
             assert_equal option.interval, 'DAY:3'
           end
 
           it 'decision T2' do
             dilog = Dialog.find_by(code: 'T1')
-            option = dilog.options.find_by(name: 'Ok')
+            option = dilog.options.find_by(name: 'Do it later!')
             assert_equal option.decision, Dialog.find_by(code: 'T2')
           end
         end
@@ -147,7 +146,7 @@ module ChatBot
           it 'interval "DAY:1"' do
             dilog = Dialog.find_by(code: 'T1')
             option = dilog.options.find_by(name: 'Yes')
-            assert_equal option.interval, 'DAY:3'
+            assert_equal option.interval, 'DAY:1'
           end 
 
           it 'decision T2' do
@@ -226,4 +225,4 @@ module ChatBot
 
     end
   end
-=end
+end
