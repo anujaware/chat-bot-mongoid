@@ -23,6 +23,7 @@ module ChatBot
     field :message, type: String
     field :user_input_type, type: String, default: 'ch'
     field :message_type, type: String, default: 'txt'
+    field :repeat_limit, type: Integer, default: 0
 
     has_many :options, class_name: 'ChatBot::Option', inverse_of: :dialog
     belongs_to :sub_category, class_name: 'ChatBot::SubCategory'
@@ -35,6 +36,7 @@ module ChatBot
     validates :user_input_type, inclusion: RESPONSE_TYPES.keys
     validates :message_type, inclusion: MESSAGE_TYPES.keys
     validates :sub_category, presence: true
+    validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
 
     before_validation :set_dialog_code, on: :create
     #accepts_nested_attributes_for :options

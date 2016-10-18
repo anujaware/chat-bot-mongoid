@@ -165,7 +165,7 @@ module ChatBot
     end
 
     def reset
-      self.finish! if viewed_count >= sub_category.repeat_limit
+      self.finish! if dialog.repeat_limit != 0 and viewed_count >= dialog.repeat_limit
       sub_categories = SubCategory.ready.where(starts_on_key: SubCategory::AFTER_DIALOG,
                                          starts_on_val: dialog.code)
       sub_categories.each do |sub_cat|

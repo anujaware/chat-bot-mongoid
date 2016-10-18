@@ -15,10 +15,6 @@ module ChatBot
 
     field :name, type: String
     field :description, type: String
-
-    ##TODO: THIS SHOULD BE EITHER IN DIALOG/OPTION MODEL
-    field :repeat_limit, type: Integer, default: 0
-
     field :approval_require, type: Boolean, default: false
     field :priority, type: Integer, default: 1
     field :starts_on_key, type: String, default: :immediate
@@ -26,8 +22,8 @@ module ChatBot
     field :is_ready_to_schedule, type: Boolean, default: false
 
     belongs_to :category, class_name: 'ChatBot::Category'
-    belongs_to :initial_dialog, class_name: 'ChatBot::Dialog', foreign_key: :code, inverse_of: nil
-    has_many :dialogs, class_name: 'ChatBot::Dialog', foreign_key: :code
+    belongs_to :initial_dialog, class_name: 'ChatBot::Dialog', inverse_of: nil, primary_key: :code
+    has_many :dialogs, class_name: 'ChatBot::Dialog'#, foreign_key: :code
 
     slug :name
 
@@ -37,7 +33,6 @@ module ChatBot
 
     validates :name, presence: true, uniqueness: { case_sensitive: false, scope: [:category] }
     validates :category, presence: true #initial_dialog
-    validates :repeat_limit, numericality: {only_integer: true, greater_than: -1}
     validates :priority, numericality: {only_integer: true, greater_than: 0, less_than: 11}
     validates :starts_on_key, inclusion: { in: STARTS_ON }
 
