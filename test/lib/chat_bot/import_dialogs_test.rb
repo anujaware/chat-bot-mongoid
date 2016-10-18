@@ -1,6 +1,6 @@
 require './test/test_helper'
 require './lib/chat_bot/import_dialogs'
-
+=begin
 module ChatBot
   class ImportdialogsTest < ActiveSupport::TestCase
 
@@ -226,4 +226,4 @@ module ChatBot
 
     end
   end
-end
+=end

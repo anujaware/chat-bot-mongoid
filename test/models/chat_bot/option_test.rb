@@ -35,9 +35,9 @@ module ChatBot
       assert @option.save
 
       @dialog = Dialog.new code: 'T40', message: Faker::Lorem.sentence, sub_category: @sub_category
-      dialog_codes = @sub_category.dialog_ids
-      @option.decision_id = 'T20'
-      assert_not @option.save
+      dialog_codes = @sub_category.dialogs.collect(&:code)
+      @option.decision_id = 'T120'
+      assert_not @option.save, 'Decision id is not from valid list'
 
       @option.decision_id = dialog_codes.sample
       assert @option.save

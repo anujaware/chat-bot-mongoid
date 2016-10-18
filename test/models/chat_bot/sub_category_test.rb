@@ -6,7 +6,6 @@ module ChatBot
     [:name, :name].each do |field|
       should validate_presence_of field
     end
-    should validate_numericality_of(:repeat_limit).only_integer.is_greater_than(-1)
     should validate_numericality_of(:priority).only_integer.is_less_than(11).is_greater_than(0)
     should validate_inclusion_of(:starts_on_key).in_array(SubCategory::STARTS_ON)
 
@@ -48,19 +47,6 @@ module ChatBot
     def test_category_validation
       @sub_category.category = nil
       assert_not @sub_category.save, 'Category is nil'
-    end
-
-    def test_validate_repeat_limit
-      assert_equal @sub_category.repeat_limit, 0
-
-      @sub_category.repeat_limit = 'abcd'
-      assert_not @sub_category.save
-
-      @sub_category.repeat_limit = '12.5'
-      assert_equal @sub_category.repeat_limit, 12
-
-      @sub_category.repeat_limit = -12
-      assert_not @sub_category.save
     end
   end
 

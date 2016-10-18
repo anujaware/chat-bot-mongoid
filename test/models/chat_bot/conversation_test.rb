@@ -11,13 +11,13 @@ module ChatBot
 
       def create_dialog
         @category = Category.find_or_create_by name: Faker::Lorem.words(2)
-        @sub_category = SubCategory.new name: Faker::Lorem.words(2),
+        @sub_category = SubCategory.create name: Faker::Lorem.words(2),
           category: @category,
           description: Faker::Lorem.sentence
         @dialog = Dialog.create message: Faker::Lorem.sentence, sub_category: @sub_category
 
         @sub_category.dialogs << @dialog
-        @sub_category.update_attribute(:initial_dialog, @dialog)
+        @sub_category.update_attribute(:initial_dialog, @dialog.code)
         assert_equal @sub_category.reload.initial_dialog, @dialog
         @sub_category
       end
@@ -114,14 +114,14 @@ module ChatBot
                 assert_equal conv.scheduled_at, Date.current
               end
 
-              it '4th day from current date' do
+              it 'at 4th day from current date' do
                 assert_equal @sub_cat_days.starts_on_val.to_i, 4
                 conv = Conversation.find_by(sub_category: @sub_cat_days)
                 assert_equal conv.scheduled_at, Date.current + 4.days
               end
             end
 
-            it 'and do not release it if approval required' do
+            it 'and do not release it if approval required i.e. keep it in scheduled state' do
               sub_category = SubCategory.new name: Faker::Lorem.words(2),
                 category: @category,
                 description: Faker::Lorem.sentence,
@@ -174,7 +174,7 @@ module ChatBot
           end
 
           @sub_cat_1.update_attributes({priority: 2, starts_on_key: SubCategory::AFTER_DAYS,
-                                        starts_on_val: 2, is_ready_to_schedule: true, repeat_limit: 3})
+                                        starts_on_val: 2, is_ready_to_schedule: true})#, repeat_limit: 3})
           @sub_cat_2.update_attributes({priority: 3, starts_on_key: SubCategory::AFTER_DAYS,
                                         starts_on_val: 3, is_ready_to_schedule: true})
           @sub_cat_3.update_attributes({priority: 4, starts_on_key: SubCategory::IMMEDIATE,
@@ -185,7 +185,7 @@ module ChatBot
                 options: {'0' => {name: Faker::Lorem.word, interval: 'DAY:5'}}
           @sub_cat_1.dialogs << @d2
 
-          option = Option.create({name: Faker::Lorem.word, decision_id: @d2.id, dialog_id: @d1.id})
+          option = Option.create({name: Faker::Lorem.word, decision_id: @d2.code, dialog_id: @d1.id})
 
           @d1.options = [option]
 
@@ -257,13 +257,13 @@ module ChatBot
 
         it 'next time conversation should start from 2nd dialog' do
           @d3 = Dialog.create message: Faker::Lorem.sentence, sub_category: @sub_cat_1,
-            options: {'0' => {name: Faker::Lorem.word, interval: 'DAY:3', decision_id: @d2.id}}
+            options: {'0' => {name: Faker::Lorem.word, interval: 'DAY:3', decision_id: @d2.code}}
           assert_equal @d3.reload.options.count, 1
 
           @sub_cat_1.dialogs << @d3
 
           option = @d2.options.first
-          assert option.update_attributes({decision_id: @d3.id, interval: nil})
+          assert option.update_attributes({decision_id: @d3.code, interval: nil})
 
           option = @d3.options.first
           response = Conversation.fetch(@user, option.id)
@@ -276,12 +276,25 @@ module ChatBot
         it 'not reschedule if crossed repeat limit' do
           assert @conv_1.update_attribute(:viewed_count, 3)
           option = @d2.options.first
+          assert @d2.update_attribute(:repeat_limit, 3)
           assert option.interval.present?
 
           Conversation.fetch(@user, option.id)
 
           @conv_1.reload
           assert @conv_1.finished?
+        end
+
+        it 'reschedule if repeat limit is 0 i.e. not set i.e. infinite' do
+          assert @conv_1.update_attribute(:viewed_count, 3)
+          option = @d2.options.first
+          assert @d2.update_attribute(:repeat_limit, 0)
+          assert option.interval.present?
+
+          Conversation.fetch(@user, option.id)
+
+          @conv_1.reload
+          assert @conv_1.released?
         end
 
         it 'create dependant i.e. after_dialog coversation if not created' do
@@ -326,7 +339,7 @@ module ChatBot
             create_dialog
           end
 
-          assert @sub_cat_1.update_attributes({priority: 6, is_ready_to_schedule: true, repeat_limit: 3})
+          assert @sub_cat_1.update_attributes({priority: 6, is_ready_to_schedule: true})
           assert @sub_cat_2.update_attributes({priority: 5, is_ready_to_schedule: true})
           assert @sub_cat_3.update_attributes({priority: 4, is_ready_to_schedule: true})
           class User

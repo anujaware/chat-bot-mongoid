@@ -8,6 +8,7 @@ module ChatBot
       in_array(Dialog::RESPONSE_TYPES.keys)
     should validate_inclusion_of(:message_type).
       in_array(Dialog::MESSAGE_TYPES.keys)
+    should validate_numericality_of(:repeat_limit).only_integer.is_greater_than(-1)
 
     # TODO: mongoid-minitest not working
     #should belong_to(:sub_category)
@@ -44,6 +45,19 @@ module ChatBot
       assert_equal @dialog.user_input_type, 'ch'
 
       @dialog.user_input_type = Faker::Lorem.word
+      assert_not @dialog.save
+    end
+
+    def test_validate_repeat_limit
+      assert_equal @dialog.repeat_limit, 0
+
+      @dialog.repeat_limit = 'abcd'
+      assert_not @dialog.save
+
+      @dialog.repeat_limit = '12.5'
+      assert_equal @dialog.repeat_limit, 12
+
+      @dialog.repeat_limit = -12
       assert_not @dialog.save
     end
 
