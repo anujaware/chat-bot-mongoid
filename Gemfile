@@ -14,7 +14,7 @@ gemspec
 # gem 'byebug', group: [:development, :test]
 
 
-gem 'mongoid', '~>5.1.4'
+gem 'mongoid', '~>4.0'
 gem 'mongoid-slug'
 gem 'mongoid-history'
 gem 'aasm'
