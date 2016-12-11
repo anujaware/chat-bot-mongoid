@@ -109,7 +109,7 @@ module ChatBot
 
             context 'and assign appropriate scheduled date to' do
               it 'current date for immediate' do
-                assert_equal @sub_cat_imm.starts_on_val, nil
+                assert_nil @sub_cat_imm.starts_on_val
                 conv = Conversation.find_by(sub_category_id: @sub_cat_imm.id)
                 assert_equal conv.scheduled_at, Date.current
               end
