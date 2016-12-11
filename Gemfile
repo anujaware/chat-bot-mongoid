@@ -18,6 +18,7 @@ gem 'mongoid', '~>4.0'
 gem 'mongoid-slug'
 gem 'mongoid-history'
 gem 'aasm'
+gem 'rubocop', require: false
 
 group :test do
   gem 'minitest-line'
